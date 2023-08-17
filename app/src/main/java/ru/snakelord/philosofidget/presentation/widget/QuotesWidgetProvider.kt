@@ -1,5 +1,6 @@
 package ru.snakelord.philosofidget.presentation.widget
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
@@ -11,21 +12,50 @@ import android.os.IBinder
 import android.widget.RemoteViews
 import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.presentation.service.QuoteLoadingService
+import ru.snakelord.philosofidget.presentation.view.MainActivity
 import ru.snakelord.philosofidget.presentation.view.WidgetViewDelegate
 
 class QuotesWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         appWidgetIds.forEach { appWidgetId ->
-            val widgetViewDelegate = WidgetViewDelegate(RemoteViews(context.packageName, R.layout.widget_quote))
-            val serviceIntent = Intent(context, QuoteLoadingService::class.java)
-            context.applicationContext.bindService(
-                serviceIntent,
-                QuoteLoadingServiceConnection(appWidgetId, widgetViewDelegate) {
-                    appWidgetManager.updateAppWidget(appWidgetId, widgetViewDelegate.remoteViews)
-                },
-                BIND_AUTO_CREATE
+            val remoteViews = RemoteViews(context.packageName, R.layout.widget_quote)
+            val applicationContext = context.applicationContext
+            setupOnWidgetClickListener(applicationContext, remoteViews)
+            startService(
+                applicationContext,
+                appWidgetManager,
+                appWidgetId,
+                WidgetViewDelegate(remoteViews)
             )
         }
+    }
+
+    private fun setupOnWidgetClickListener(context: Context, remoteViews: RemoteViews) {
+        remoteViews.setOnClickPendingIntent(
+            R.id.widgetRoot,
+            PendingIntent.getActivities(
+                context,
+                0,
+                arrayOf(Intent(context, MainActivity::class.java)),
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        )
+    }
+
+    private fun startService(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        widgetId: Int,
+        widgetViewDelegate: WidgetViewDelegate
+    ) {
+        val serviceIntent = Intent(context, QuoteLoadingService::class.java)
+        context.bindService(
+            serviceIntent,
+            QuoteLoadingServiceConnection(widgetId, widgetViewDelegate) {
+                appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.remoteViews)
+            },
+            BIND_AUTO_CREATE
+        )
     }
 
     private class QuoteLoadingServiceConnection(
