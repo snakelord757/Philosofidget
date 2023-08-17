@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="widget_padding">16dp</dimen>
+    <dimen name="widget_min_width">330dp</dimen>
+    <dimen name="widget_min_height">220dp</dimen>
+    <dimen name="quote_widget_author_default_text_size">15sp</dimen>
+    <dimen name="quote_widget_quote_default_text_size">30sp</dimen>
+    <dimen name="spacing_16">16dp</dimen>
+    <dimen name="widget_settings_toggle_min_height">60dp</dimen>
+    <dimen name="widget_settings_text_size">16sp</dimen>
+</resources>

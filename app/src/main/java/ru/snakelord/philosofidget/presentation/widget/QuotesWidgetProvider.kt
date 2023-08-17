@@ -9,9 +9,9 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.widget.RemoteViews
+import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.presentation.service.QuoteLoadingService
 import ru.snakelord.philosofidget.presentation.view.WidgetViewDelegate
-import ru.snakelord.randomquoteswidget.R
 
 class QuotesWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {

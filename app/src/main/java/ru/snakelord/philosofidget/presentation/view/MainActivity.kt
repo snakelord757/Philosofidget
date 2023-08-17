@@ -1,9 +1,8 @@
 package ru.snakelord.philosofidget.presentation.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import ru.snakelord.randomquoteswidget.R
+import androidx.appcompat.app.AppCompatActivity
+import ru.snakelord.philosofidget.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

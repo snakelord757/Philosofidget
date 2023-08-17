@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Philosofidget</string>
+    <string name="widget_preview_quote">Ленивых людей не бывает. Бывают никудышные цели — то есть такие цели, которые не вдохновляют.</string>
+    <string name="widget_preview_quote_author">Энтони Роббинс</string>
 </resources>
