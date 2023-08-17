@@ -11,24 +11,26 @@ import ru.snakelord.philosofidget.domain.ext.Mapper
 import ru.snakelord.philosofidget.domain.model.GetQuoteParams
 import ru.snakelord.philosofidget.domain.model.Lang
 import ru.snakelord.philosofidget.domain.model.Quote
+import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetQuoteUseCase
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
 
 class QuoteViewModel(
     private val getQuoteUseCase: GetQuoteUseCase,
     private val quoteWidgetStateMapper: Mapper<Quote, QuoteWidgetState>,
-    private val workingDispatcher: CoroutineDispatcher
+    private val workingDispatcher: CoroutineDispatcher,
+    private val getKeyUseCase: GetKeyUseCase
 ) : ViewModel() {
 
-    private val quoteStateFlow = MutableStateFlow<QuoteWidgetState>(QuoteWidgetState.Init)
+    private val quoteStateFlow = MutableStateFlow<QuoteWidgetState>(QuoteWidgetState.Loading)
     val quoteState: StateFlow<QuoteWidgetState>
         get() = quoteStateFlow.asStateFlow()
 
     fun loadQuote() {
         viewModelScope.launch(workingDispatcher) {
-            quoteStateFlow.emit(QuoteWidgetState.Loading)
-            val quote = getQuoteUseCase.invoke(GetQuoteParams(124434, Lang.RU))
-            quoteStateFlow.emit(quoteWidgetStateMapper.invoke(quote))
+            runCatching { getQuoteUseCase.invoke(GetQuoteParams(getKeyUseCase.invoke(), Lang.RU)) }
+                .onSuccess { quoteStateFlow.emit(quoteWidgetStateMapper.invoke(it)) }
+                .onFailure { quoteStateFlow.emit(QuoteWidgetState.Error) }
         }
     }
 }

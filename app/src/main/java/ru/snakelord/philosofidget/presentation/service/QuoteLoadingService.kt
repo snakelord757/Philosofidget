@@ -24,33 +24,21 @@ class QuoteLoadingService : ServiceWithVMStorage(), QuoteServiceDelegate {
     }
 
     override fun loadQuote() {
-        checkRequirements()
+        if (widgetId == UNDEFINED_ID) error("Widget id isn't provided")
         quoteViewModel.loadQuote()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                quoteViewModel.quoteState.collect(::updateWidgetState)
+                quoteViewModel.quoteState.collect(::setWidgetState)
             }
         }
     }
 
-    private fun checkRequirements() {
-        if (widgetId == UNDEFINED_ID) error("Widget id isn't provided")
-        if (widgetViewDelegate == null) error("WidgetViewDelegate isn't provided")
-    }
-
-    private fun setWidgetState(widgetState: QuoteWidgetState.WidgetState) {
-        widgetViewDelegate?.let {
-            it.setQuote(widgetState.quote.quoteText)
-            it.setQuoteAuthor(widgetState.quote.quoteAuthor)
-        }
-        onQuoteLoadedCallback?.invoke()
-        stopSelf()
-    }
-
-    private fun updateWidgetState(quoteWidgetState: QuoteWidgetState) {
-        when (quoteWidgetState) {
-            is QuoteWidgetState.WidgetState -> setWidgetState(quoteWidgetState)
-            else -> Unit
+    private fun setWidgetState(quoteWidgetState: QuoteWidgetState) {
+        widgetViewDelegate?.setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
+        if (quoteWidgetState is QuoteWidgetState.WidgetState) {
+            widgetViewDelegate?.setQuote(quoteWidgetState.quote)
+            onQuoteLoadedCallback?.invoke()
+            stopSelf()
         }
     }
 
