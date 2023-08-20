@@ -1,5 +1,5 @@
 package ru.snakelord.philosofidget.domain.usecase
 
-interface CoroutineUseCase<Input, Output> {
-    suspend fun invoke(params: Input): Output
+interface CoroutineUseCase<Output> {
+    suspend fun invoke(): Output
 }

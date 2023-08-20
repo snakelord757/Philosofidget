@@ -1,4 +1,4 @@
-package ru.snakelord.philosofidget.presentation.view
+package ru.snakelord.philosofidget.presentation.widget
 
 import android.util.TypedValue.COMPLEX_UNIT_SP
 import android.view.View
@@ -8,6 +8,7 @@ import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.domain.model.Quote
 
 class WidgetViewDelegate(val remoteViews: RemoteViews) {
+
     fun setProgressVisibility(isProgressVisible: Boolean) {
         remoteViews.setViewVisibility(R.id.progressBar, resolveVisibility(isProgressVisible))
         remoteViews.setViewVisibility(R.id.quoteContainer, resolveVisibility(isProgressVisible.not()))
@@ -15,7 +16,9 @@ class WidgetViewDelegate(val remoteViews: RemoteViews) {
 
     fun setQuote(quote: Quote) {
         remoteViews.setTextViewText(R.id.quote, quote.quoteText)
-        remoteViews.setTextViewText(R.id.author, quote.quoteAuthor)
+        val quoteAuthorText = quote.quoteAuthor
+        remoteViews.setViewVisibility(R.id.author, resolveVisibility(quoteAuthorText.isNotEmpty()))
+        remoteViews.setTextViewText(R.id.author, quoteAuthorText)
     }
 
     fun setQuoteTextSize(size: Float) = setTextSize(R.id.quote, size)

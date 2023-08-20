@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/widget_padding"
+    android:background="@drawable/widget_preview_background_shape"
     android:orientation="vertical">
 
     <TextView

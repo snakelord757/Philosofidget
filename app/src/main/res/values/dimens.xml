@@ -8,4 +8,6 @@
     <dimen name="spacing_16">16dp</dimen>
     <dimen name="widget_settings_toggle_min_height">60dp</dimen>
     <dimen name="widget_settings_text_size">16sp</dimen>
+    <dimen name="spacing_20">20dp</dimen>
+    <dimen name="seekbar_limit_values_width">20dp</dimen>
 </resources>

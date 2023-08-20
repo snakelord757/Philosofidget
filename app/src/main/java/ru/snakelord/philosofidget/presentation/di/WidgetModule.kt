@@ -18,15 +18,14 @@ import ru.snakelord.philosofidget.domain.mapper.quoteDtoMapper
 import ru.snakelord.philosofidget.domain.repository.QuoteRepository
 import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetQuoteUseCase
-import ru.snakelord.philosofidget.presentation.mapper.quoteMapper
+import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.service.QuoteViewModel
 import java.util.concurrent.TimeUnit
 
 private const val QUOTE_DTO_MAPPER = "QUOTE_DTO_MAPPER"
-private const val QUOTE_WIDGET_STATE_MAPPER = "QUOTE_WIDGET_STATE_MAPPER"
 private const val RESPONSE_TIMEOUT = 10L
 
-val dependencyModule = module {
+val widgetModule = module {
     factory {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BASIC)
@@ -50,7 +49,7 @@ val dependencyModule = module {
 
     factory(named(QUOTE_DTO_MAPPER)) { quoteDtoMapper }
 
-    factory(named(QUOTE_WIDGET_STATE_MAPPER)) { quoteMapper }
+    factory { QuoteWidgetStateMapper() }
 
     factory { GetQuoteUseCase(get(), get(named(QUOTE_DTO_MAPPER))) }
 
@@ -58,5 +57,5 @@ val dependencyModule = module {
 
     factory { GetKeyUseCase() }
 
-    viewModel { QuoteViewModel(get(), get(named(QUOTE_WIDGET_STATE_MAPPER)), get(), get()) }
+    viewModel { QuoteViewModel(get(), get(), get(), get(), get()) }
 }

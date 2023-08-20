@@ -1,6 +1,6 @@
 package ru.snakelord.philosofidget.presentation.service
 
-import ru.snakelord.philosofidget.presentation.view.WidgetViewDelegate
+import ru.snakelord.philosofidget.presentation.widget.WidgetViewDelegate
 
 interface QuoteServiceDelegate {
     fun loadQuote()
