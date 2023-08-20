@@ -7,5 +7,9 @@ interface WidgetSettingsRepository {
 
     fun setAuthorVisibility(isAuthorVisible: Boolean)
 
+    fun getQuoteLanguage(): String
+
+    fun setQuoteLanguage(language: String)
+
     fun getWidgetSettings(): Array<WidgetSettings>
 }

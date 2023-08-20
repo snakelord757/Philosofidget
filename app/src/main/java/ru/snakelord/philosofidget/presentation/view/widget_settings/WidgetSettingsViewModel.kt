@@ -31,6 +31,10 @@ class WidgetSettingsViewModel(
         loadQuoteWidgetParams()
     }
 
+    fun onLanguageSelected(language: String) {
+        widgetSettingsInteractor.setQuoteLanguage(language)
+    }
+
     fun requestWidgetUpdate() = widgetUpdater.updateWidget()
 
     fun loadQuoteWidgetParams() = viewModelScope.launch(ioDispatcher) {

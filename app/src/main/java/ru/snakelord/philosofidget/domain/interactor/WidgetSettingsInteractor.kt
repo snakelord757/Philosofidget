@@ -6,6 +6,8 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings
 interface WidgetSettingsInteractor {
     fun setAuthorVisibility(isAuthorVisible: Boolean)
 
+    fun setQuoteLanguage(language: String)
+
     fun getWidgetSettings(): Array<WidgetSettings>
 
     fun getQuoteWidgetParams(): QuoteWidgetParams

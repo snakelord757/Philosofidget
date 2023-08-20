@@ -1,10 +1,8 @@
 package ru.snakelord.philosofidget.domain.model
 
-import androidx.annotation.StringRes
-
 sealed class WidgetSettings {
     data class Toggle(
-        @StringRes val titleRes: Int,
+        val title: String,
         val currentValue: Boolean,
         val toggleTarget: ToggleTarget
     ) : WidgetSettings() {
@@ -12,4 +10,10 @@ sealed class WidgetSettings {
             AUTHOR_VISIBILITY
         }
     }
+
+    data class Spinner(
+        val title: String,
+        val currentVariant: String,
+        val variants: List<String>
+    ) : WidgetSettings()
 }

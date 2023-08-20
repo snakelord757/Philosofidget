@@ -16,9 +16,9 @@
         tools:text="Спиннер для выбора вариантов функции виджета" />
 
     <Spinner
-        android:id="@+id/toggleSwitch"
+        android:id="@+id/spinner"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center" />
 
 </LinearLayout>
