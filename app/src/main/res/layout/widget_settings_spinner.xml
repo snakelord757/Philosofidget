@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/widget_settings_toggle_min_height"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/spinnerTitle"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="center|start"
+        android:layout_weight="7"
+        android:textSize="@dimen/widget_settings_text_size"
+        tools:text="Спиннер для выбора вариантов функции виджета" />
+
+    <Spinner
+        android:id="@+id/toggleSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+</LinearLayout>

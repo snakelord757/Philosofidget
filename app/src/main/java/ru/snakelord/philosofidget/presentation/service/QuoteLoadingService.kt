@@ -9,7 +9,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import ru.snakelord.philosofidget.domain.ext.viewModel
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
-import ru.snakelord.philosofidget.presentation.view.WidgetViewDelegate
+import ru.snakelord.philosofidget.presentation.widget.WidgetViewDelegate
 
 class QuoteLoadingService : ServiceWithVMStorage(), QuoteServiceDelegate {
 
@@ -37,6 +37,7 @@ class QuoteLoadingService : ServiceWithVMStorage(), QuoteServiceDelegate {
         widgetViewDelegate?.setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
         if (quoteWidgetState is QuoteWidgetState.WidgetState) {
             widgetViewDelegate?.setQuote(quoteWidgetState.quote)
+            widgetViewDelegate?.isAuthorVisible(quoteWidgetState.isAuthorVisible)
             onQuoteLoadedCallback?.invoke()
             stopSelf()
         }

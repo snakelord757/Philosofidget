@@ -11,5 +11,5 @@ interface QuoteService {
         @Query("format") format: String,
         @Query("key") key: Int,
         @Query("lang") lang: String
-    ): ru.snakelord.philosofidget.data.model.QuoteDTO
+    ): QuoteDTO
 }
