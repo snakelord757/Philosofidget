@@ -8,7 +8,7 @@ class ToggleViewHolder(
     private val toggleCallback: (Boolean, WidgetSettings.Toggle.ToggleTarget) -> Unit
 ) : WidgetSettingsBaseViewHolder<WidgetSettings.Toggle>(binding) {
     override fun bind(item: WidgetSettings.Toggle) {
-        binding.toggleTitle.text = context.getText(item.titleRes)
+        binding.toggleTitle.text = item.title
         binding.toggleSwitch.isChecked = item.currentValue
         binding.toggleSwitch.setOnCheckedChangeListener { _, isChecked -> toggleCallback.invoke(isChecked, item.toggleTarget) }
     }

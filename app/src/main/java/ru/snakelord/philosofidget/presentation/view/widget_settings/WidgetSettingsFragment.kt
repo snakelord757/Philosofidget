@@ -25,7 +25,8 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     private val widgetSettingsViewModel by viewModel<WidgetSettingsViewModel>()
     private val widgetSettingsAdapter by lazy(LazyThreadSafetyMode.NONE) {
         WidgetSettingsAdapter(
-            toggleCallback = widgetSettingsViewModel::onToggleUpdated
+            toggleCallback = widgetSettingsViewModel::onToggleUpdated,
+            languageSpinnerCallback = widgetSettingsViewModel::onLanguageSelected
         )
     }
 
