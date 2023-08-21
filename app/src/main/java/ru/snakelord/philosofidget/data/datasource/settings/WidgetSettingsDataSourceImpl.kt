@@ -14,17 +14,34 @@ class WidgetSettingsDataSourceImpl(
     }
 
     override fun getQuoteLanguage(): String =
-        settingsPreferences.getString(PREFERENCE_QUOTE_LANGUAGE_KEY, PREFERENCE_QUOTE_LANGUAGE_DEFAULT) ?: PREFERENCE_QUOTE_LANGUAGE_DEFAULT
+        settingsPreferences.getString(PREFERENCES_QUOTE_LANGUAGE_KEY, PREFERENCE_QUOTE_LANGUAGE_DEFAULT) ?: PREFERENCE_QUOTE_LANGUAGE_DEFAULT
 
     override fun setQuoteLanguage(language: String) {
-        settingsPreferences.edit { putString(PREFERENCE_QUOTE_LANGUAGE_KEY, language) }
+        settingsPreferences.edit { putString(PREFERENCES_QUOTE_LANGUAGE_KEY, language) }
     }
+
+    override fun setQuoteTextSize(quoteTextSize: Int) {
+        settingsPreferences.edit { putInt(PREFERENCES_QUOTE_TEXT_SIZE_KEY, quoteTextSize) }
+    }
+
+    override fun getQuoteTextSize(): Int = settingsPreferences.getInt(PREFERENCES_QUOTE_TEXT_SIZE_KEY, PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT)
+
+    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int) {
+        settingsPreferences.edit { putInt(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, quoteAuthorTextSize) }
+    }
+
+    override fun getQuoteAuthorTextSize(): Int =
+        settingsPreferences.getInt(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT)
 
     private companion object {
         const val PREFERENCES_IS_AUTHOR_VISIBLE_KEY = "PREFERENCES_IS_AUTHOR_VISIBLE_KEY"
-        const val PREFERENCE_QUOTE_LANGUAGE_KEY = "PREFERENCE_QUOTE_LANGUAGE_KEY"
+        const val PREFERENCES_QUOTE_LANGUAGE_KEY = "PREFERENCES_QUOTE_LANGUAGE_KEY"
+        const val PREFERENCES_QUOTE_TEXT_SIZE_KEY = "PREFERENCES_QUOTE_TEXT_SIZE_KEY"
+        const val PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY = "PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY"
 
         const val PREFERENCE_IS_AUTHOR_VISIBLE_DEFAULT = true
         const val PREFERENCE_QUOTE_LANGUAGE_DEFAULT = "Русский"
+        const val PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT = 30
+        const val PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT = 15
     }
 }

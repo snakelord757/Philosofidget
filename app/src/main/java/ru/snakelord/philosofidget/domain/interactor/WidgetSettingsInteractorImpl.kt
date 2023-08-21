@@ -14,6 +14,9 @@ class WidgetSettingsInteractorImpl(
     override fun setAuthorVisibility(isAuthorVisible: Boolean) = widgetSettingsRepository.setAuthorVisibility(isAuthorVisible)
 
     override fun setQuoteLanguage(language: String) = widgetSettingsRepository.setQuoteLanguage(language)
+    override fun setQuoteTextSize(quoteTextSize: Int) = widgetSettingsRepository.setQuoteTextSize(quoteTextSize)
+
+    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int) = widgetSettingsRepository.setQuoteAuthorTextSize(quoteAuthorTextSize)
 
     override fun getWidgetSettings(): Array<WidgetSettings> = widgetSettingsRepository.getWidgetSettings()
 
@@ -26,7 +29,9 @@ class WidgetSettingsInteractorImpl(
             .toMap()
         return QuoteWidgetParams(
             isAuthorVisible = widgetSettingsRepository.getAuthorVisibility(),
-            quoteLang = languagesMap.getOrDefault(widgetSettingsRepository.getQuoteLanguage(), Lang.RU)
+            quoteLang = languagesMap.getOrDefault(widgetSettingsRepository.getQuoteLanguage(), Lang.RU),
+            quoteTextSize = widgetSettingsRepository.getQuoteTextSize().toFloat(),
+            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize().toFloat()
         )
     }
 }

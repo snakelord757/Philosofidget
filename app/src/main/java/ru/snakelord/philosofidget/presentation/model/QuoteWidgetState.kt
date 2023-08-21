@@ -7,7 +7,9 @@ sealed class QuoteWidgetState {
 
     data class WidgetState(
         val quote: Quote,
-        val isAuthorVisible: Boolean
+        val isAuthorVisible: Boolean,
+        val quoteTextSize: Float,
+        val quoteAuthorTextSize: Float
     ) : QuoteWidgetState()
 
     object Error : QuoteWidgetState()

@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.SeekBar.SeekBarTarget.QUOTE_AUTHOR_TEXT_SIZE
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.SeekBar.SeekBarTarget.QUOTE_TEXT_SIZE
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Toggle.ToggleTarget
 import ru.snakelord.philosofidget.presentation.widget.WidgetUpdater
 
@@ -33,6 +35,14 @@ class WidgetSettingsViewModel(
 
     fun onLanguageSelected(language: String) {
         widgetSettingsInteractor.setQuoteLanguage(language)
+    }
+
+    fun onSeekBarValueChanged(newValue: Int, seekBarTarget: WidgetSettings.SeekBar.SeekBarTarget) {
+        when (seekBarTarget) {
+            QUOTE_TEXT_SIZE -> widgetSettingsInteractor.setQuoteTextSize(newValue)
+            QUOTE_AUTHOR_TEXT_SIZE -> widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
+        }
+        loadQuoteWidgetParams()
     }
 
     fun requestWidgetUpdate() = widgetUpdater.updateWidget()

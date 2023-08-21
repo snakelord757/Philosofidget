@@ -11,5 +11,13 @@ interface WidgetSettingsRepository {
 
     fun setQuoteLanguage(language: String)
 
+    fun setQuoteTextSize(quoteTextSize: Int)
+
+    fun getQuoteTextSize(): Int
+
+    fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int)
+
+    fun getQuoteAuthorTextSize(): Int
+
     fun getWidgetSettings(): Array<WidgetSettings>
 }

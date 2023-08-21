@@ -18,6 +18,14 @@ class WidgetSettingsRepositoryImpl(
 
     override fun setQuoteLanguage(language: String) = widgetSettingsDataSource.setQuoteLanguage(language)
 
+    override fun setQuoteTextSize(quoteTextSize: Int) = widgetSettingsDataSource.setQuoteTextSize(quoteTextSize)
+
+    override fun getQuoteTextSize(): Int = widgetSettingsDataSource.getQuoteTextSize()
+
+    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int) = widgetSettingsDataSource.setQuoteAuthorTextSize(quoteAuthorTextSize)
+
+    override fun getQuoteAuthorTextSize(): Int = widgetSettingsDataSource.getQuoteAuthorTextSize()
+
     override fun getWidgetSettings(): Array<WidgetSettings> {
         return arrayOf(
             WidgetSettings.Toggle(
@@ -32,7 +40,28 @@ class WidgetSettingsRepositoryImpl(
                     stringResolver.getString(R.string.widget_spinner_lang_russian),
                     stringResolver.getString(R.string.widget_spinner_lang_english)
                 )
+            ),
+            WidgetSettings.SeekBar(
+                title = stringResolver.getString(R.string.widget_settings_quote_text_size),
+                currentValue = widgetSettingsDataSource.getQuoteTextSize(),
+                minValue = MIN_TEXT_SIZE,
+                maxValue = QUOTE_MAX_TEXT_SIZE,
+                seekBarTarget = WidgetSettings.SeekBar.SeekBarTarget.QUOTE_TEXT_SIZE
+            ),
+            WidgetSettings.SeekBar(
+                title = stringResolver.getString(R.string.widget_settings_quote_author_text_size),
+                currentValue = widgetSettingsDataSource.getQuoteAuthorTextSize(),
+                minValue = MIN_TEXT_SIZE,
+                maxValue = QUOTE_AUTHOR_MAX_TEXT_SIZE,
+                seekBarTarget = WidgetSettings.SeekBar.SeekBarTarget.QUOTE_AUTHOR_TEXT_SIZE
             )
         )
+    }
+
+    private companion object {
+        // The lowest possible text size value
+        const val MIN_TEXT_SIZE = 11
+        const val QUOTE_MAX_TEXT_SIZE = 30
+        const val QUOTE_AUTHOR_MAX_TEXT_SIZE = 15
     }
 }

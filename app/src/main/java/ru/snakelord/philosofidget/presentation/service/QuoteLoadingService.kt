@@ -36,11 +36,15 @@ class QuoteLoadingService : ServiceWithVMStorage(), QuoteServiceDelegate {
     private fun setWidgetState(quoteWidgetState: QuoteWidgetState) {
         widgetViewDelegate?.setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
         if (quoteWidgetState is QuoteWidgetState.WidgetState) {
-            widgetViewDelegate?.setQuote(quoteWidgetState.quote)
-            widgetViewDelegate?.isAuthorVisible(quoteWidgetState.isAuthorVisible)
-            onQuoteLoadedCallback?.invoke()
-            stopSelf()
+            widgetViewDelegate?.let {
+                it.setQuote(quoteWidgetState.quote)
+                it.isAuthorVisible(quoteWidgetState.isAuthorVisible)
+                it.setQuoteTextSize(quoteWidgetState.quoteTextSize)
+                it.setQuoteAuthorTextSize(quoteWidgetState.quoteAuthorTextSize)
+            }
         }
+        onQuoteLoadedCallback?.invoke()
+        stopSelf()
     }
 
     override fun addWidgetId(widgetId: Int) {
