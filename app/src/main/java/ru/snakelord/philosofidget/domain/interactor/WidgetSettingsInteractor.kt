@@ -8,6 +8,10 @@ interface WidgetSettingsInteractor {
 
     fun setQuoteLanguage(language: String)
 
+    fun setQuoteTextSize(quoteTextSize: Int)
+
+    fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int)
+
     fun getWidgetSettings(): Array<WidgetSettings>
 
     fun getQuoteWidgetParams(): QuoteWidgetParams

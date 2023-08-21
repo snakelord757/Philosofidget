@@ -8,6 +8,8 @@ class QuoteWidgetStateMapper {
     fun map(quote: Quote, widgetParams: QuoteWidgetParams) =
         QuoteWidgetState.WidgetState(
             quote = quote,
-            isAuthorVisible = widgetParams.isAuthorVisible
+            isAuthorVisible = widgetParams.isAuthorVisible,
+            quoteTextSize = widgetParams.quoteTextSize,
+            quoteAuthorTextSize = widgetParams.quoteAuthorTextSize
         )
 }

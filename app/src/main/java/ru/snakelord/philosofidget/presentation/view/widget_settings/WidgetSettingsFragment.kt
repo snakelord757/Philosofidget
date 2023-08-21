@@ -26,7 +26,8 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     private val widgetSettingsAdapter by lazy(LazyThreadSafetyMode.NONE) {
         WidgetSettingsAdapter(
             toggleCallback = widgetSettingsViewModel::onToggleUpdated,
-            languageSpinnerCallback = widgetSettingsViewModel::onLanguageSelected
+            languageSpinnerCallback = widgetSettingsViewModel::onLanguageSelected,
+            seekBarCallback = widgetSettingsViewModel::onSeekBarValueChanged
         )
     }
 
@@ -55,8 +56,10 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         }
     }
 
-    private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) {
-        binding.quoteWidgetPreview.author.isVisible = widgetParams.isAuthorVisible
+    private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
+        author.isVisible = widgetParams.isAuthorVisible
+        quote.textSize = widgetParams.quoteTextSize
+        author.textSize = widgetParams.quoteAuthorTextSize
     }
 
     private fun setupWidgetSettings(widgetSettings: Array<WidgetSettings>) {

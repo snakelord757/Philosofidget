@@ -7,4 +7,6 @@
     <string name="widget_settings_quote_language">Язык (не влияет на превью виджета)</string>
     <string name="widget_spinner_lang_russian">Русский</string>
     <string name="widget_spinner_lang_english">English</string>
+    <string name="widget_settings_quote_text_size">Размер текста цитаты</string>
+    <string name="widget_settings_quote_author_text_size">Размер текста автора</string>
 </resources>
