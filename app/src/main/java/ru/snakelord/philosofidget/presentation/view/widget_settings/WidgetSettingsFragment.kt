@@ -27,7 +27,7 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         WidgetSettingsAdapter(
             toggleCallback = widgetSettingsViewModel::onToggleUpdated,
             languageSpinnerCallback = widgetSettingsViewModel::onLanguageSelected,
-            seekBarCallback = widgetSettingsViewModel::onSeekBarValueChanged
+            sliderCallback = widgetSettingsViewModel::onSliderValueChanged
         )
     }
 

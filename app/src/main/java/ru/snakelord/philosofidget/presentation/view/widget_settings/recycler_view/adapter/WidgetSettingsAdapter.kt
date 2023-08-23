@@ -3,11 +3,11 @@ package ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vi
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import ru.snakelord.philosofidget.databinding.WidgetSettingsSeekbarBinding
+import ru.snakelord.philosofidget.databinding.WidgetSettingsSliderBinding
 import ru.snakelord.philosofidget.databinding.WidgetSettingsSpinnerBinding
 import ru.snakelord.philosofidget.databinding.WidgetSettingsToggleBinding
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
-import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.SeekBarViewHolder
+import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.SliderViewHolder
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.SpinnerViewHolder
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.ToggleViewHolder
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.WidgetSettingsBaseViewHolder
@@ -15,7 +15,7 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vie
 class WidgetSettingsAdapter(
     private val toggleCallback: (Boolean, WidgetSettings.Toggle.ToggleTarget) -> Unit,
     private val languageSpinnerCallback: (String) -> Unit,
-    private val seekBarCallback: (Int, WidgetSettings.SeekBar.SeekBarTarget) -> Unit
+    private val sliderCallback: (Float, WidgetSettings.SeekBar.SeekBarTarget) -> Unit
 ) : RecyclerView.Adapter<WidgetSettingsBaseViewHolder<WidgetSettings>>() {
 
     private val widgetSettings = mutableListOf<WidgetSettings>()
@@ -34,9 +34,9 @@ class WidgetSettingsAdapter(
                 languageSpinnerCallback = languageSpinnerCallback
             )
 
-            SEEKBAR_VIEW_TYPE -> SeekBarViewHolder(
-                binding = WidgetSettingsSeekbarBinding.inflate(layoutInflater, parent, false),
-                onSeekBarValueChangedCallback = seekBarCallback
+            SEEKBAR_VIEW_TYPE -> SliderViewHolder(
+                binding = WidgetSettingsSliderBinding.inflate(layoutInflater, parent, false),
+                onSliderValueChangedCallback = sliderCallback
             )
 
             else -> error("Unsupported viewType: $viewType. Check log for details")

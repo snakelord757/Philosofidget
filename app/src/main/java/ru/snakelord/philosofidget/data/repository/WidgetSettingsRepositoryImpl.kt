@@ -18,13 +18,13 @@ class WidgetSettingsRepositoryImpl(
 
     override fun setQuoteLanguage(language: String) = widgetSettingsDataSource.setQuoteLanguage(language)
 
-    override fun setQuoteTextSize(quoteTextSize: Int) = widgetSettingsDataSource.setQuoteTextSize(quoteTextSize)
+    override fun setQuoteTextSize(quoteTextSize: Float) = widgetSettingsDataSource.setQuoteTextSize(quoteTextSize)
 
-    override fun getQuoteTextSize(): Int = widgetSettingsDataSource.getQuoteTextSize()
+    override fun getQuoteTextSize(): Float = widgetSettingsDataSource.getQuoteTextSize()
 
-    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int) = widgetSettingsDataSource.setQuoteAuthorTextSize(quoteAuthorTextSize)
+    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float) = widgetSettingsDataSource.setQuoteAuthorTextSize(quoteAuthorTextSize)
 
-    override fun getQuoteAuthorTextSize(): Int = widgetSettingsDataSource.getQuoteAuthorTextSize()
+    override fun getQuoteAuthorTextSize(): Float = widgetSettingsDataSource.getQuoteAuthorTextSize()
 
     override fun getWidgetSettings(): Array<WidgetSettings> {
         return arrayOf(
@@ -60,8 +60,8 @@ class WidgetSettingsRepositoryImpl(
 
     private companion object {
         // The lowest possible text size value
-        const val MIN_TEXT_SIZE = 11
-        const val QUOTE_MAX_TEXT_SIZE = 30
-        const val QUOTE_AUTHOR_MAX_TEXT_SIZE = 15
+        const val MIN_TEXT_SIZE = 11f
+        const val QUOTE_MAX_TEXT_SIZE = 30f
+        const val QUOTE_AUTHOR_MAX_TEXT_SIZE = 15f
     }
 }

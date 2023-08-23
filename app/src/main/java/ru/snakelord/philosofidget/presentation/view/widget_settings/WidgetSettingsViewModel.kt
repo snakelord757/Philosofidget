@@ -37,7 +37,7 @@ class WidgetSettingsViewModel(
         widgetSettingsInteractor.setQuoteLanguage(language)
     }
 
-    fun onSeekBarValueChanged(newValue: Int, seekBarTarget: WidgetSettings.SeekBar.SeekBarTarget) {
+    fun onSliderValueChanged(newValue: Float, seekBarTarget: WidgetSettings.SeekBar.SeekBarTarget) {
         when (seekBarTarget) {
             QUOTE_TEXT_SIZE -> widgetSettingsInteractor.setQuoteTextSize(newValue)
             QUOTE_AUTHOR_TEXT_SIZE -> widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
