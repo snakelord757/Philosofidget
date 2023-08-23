@@ -20,18 +20,18 @@ class WidgetSettingsDataSourceImpl(
         settingsPreferences.edit { putString(PREFERENCES_QUOTE_LANGUAGE_KEY, language) }
     }
 
-    override fun setQuoteTextSize(quoteTextSize: Int) {
-        settingsPreferences.edit { putInt(PREFERENCES_QUOTE_TEXT_SIZE_KEY, quoteTextSize) }
+    override fun setQuoteTextSize(quoteTextSize: Float) {
+        settingsPreferences.edit { putFloat(PREFERENCES_QUOTE_TEXT_SIZE_KEY, quoteTextSize) }
     }
 
-    override fun getQuoteTextSize(): Int = settingsPreferences.getInt(PREFERENCES_QUOTE_TEXT_SIZE_KEY, PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT)
+    override fun getQuoteTextSize(): Float = settingsPreferences.getFloat(PREFERENCES_QUOTE_TEXT_SIZE_KEY, PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT)
 
-    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Int) {
-        settingsPreferences.edit { putInt(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, quoteAuthorTextSize) }
+    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float) {
+        settingsPreferences.edit { putFloat(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, quoteAuthorTextSize) }
     }
 
-    override fun getQuoteAuthorTextSize(): Int =
-        settingsPreferences.getInt(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT)
+    override fun getQuoteAuthorTextSize(): Float =
+        settingsPreferences.getFloat(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT)
 
     private companion object {
         const val PREFERENCES_IS_AUTHOR_VISIBLE_KEY = "PREFERENCES_IS_AUTHOR_VISIBLE_KEY"
@@ -41,7 +41,7 @@ class WidgetSettingsDataSourceImpl(
 
         const val PREFERENCE_IS_AUTHOR_VISIBLE_DEFAULT = true
         const val PREFERENCE_QUOTE_LANGUAGE_DEFAULT = "Русский"
-        const val PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT = 30
-        const val PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT = 15
+        const val PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT = 30f
+        const val PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT = 15f
     }
 }

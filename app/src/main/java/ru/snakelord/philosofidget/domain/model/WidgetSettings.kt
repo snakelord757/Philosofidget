@@ -19,9 +19,9 @@ sealed class WidgetSettings {
 
     data class SeekBar(
         val title: String,
-        val currentValue: Int,
-        val minValue: Int,
-        val maxValue: Int,
+        val currentValue: Float,
+        val minValue: Float,
+        val maxValue: Float,
         val seekBarTarget: SeekBarTarget
     ) : WidgetSettings() {
         enum class SeekBarTarget {
