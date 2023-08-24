@@ -3,10 +3,7 @@ package ru.snakelord.philosofidget.presentation.service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.launch
+import ru.snakelord.philosofidget.domain.ext.subscribeOnLifecycle
 import ru.snakelord.philosofidget.domain.ext.viewModel
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
 import ru.snakelord.philosofidget.presentation.widget.WidgetViewDelegate
@@ -25,12 +22,8 @@ class QuoteLoadingService : ServiceWithVMStorage(), QuoteServiceDelegate {
 
     override fun loadQuote() {
         if (widgetId == UNDEFINED_ID) error("Widget id isn't provided")
+        quoteViewModel.quoteState.subscribeOnLifecycle(this, ::setWidgetState)
         quoteViewModel.loadQuote()
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                quoteViewModel.quoteState.collect(::setWidgetState)
-            }
-        }
     }
 
     private fun setWidgetState(quoteWidgetState: QuoteWidgetState) {
@@ -42,9 +35,8 @@ class QuoteLoadingService : ServiceWithVMStorage(), QuoteServiceDelegate {
                 it.setQuoteTextSize(quoteWidgetState.quoteTextSize)
                 it.setQuoteAuthorTextSize(quoteWidgetState.quoteAuthorTextSize)
             }
+            onQuoteLoadedCallback?.invoke()
         }
-        onQuoteLoadedCallback?.invoke()
-        stopSelf()
     }
 
     override fun addWidgetId(widgetId: Int) {

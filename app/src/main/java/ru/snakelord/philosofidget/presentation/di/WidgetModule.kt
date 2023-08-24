@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -18,6 +19,8 @@ import ru.snakelord.philosofidget.domain.repository.QuoteRepository
 import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetQuoteUseCase
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
+import ru.snakelord.philosofidget.presentation.notification_builder.NotificationProvider
+import ru.snakelord.philosofidget.presentation.notification_builder.NotificationProviderImpl
 import ru.snakelord.philosofidget.presentation.service.QuoteViewModel
 import java.util.concurrent.TimeUnit
 
@@ -53,5 +56,7 @@ val widgetModule = module {
 
     factory { GetKeyUseCase() }
 
-    viewModel { QuoteViewModel(get(), get(), get(), get(), get()) }
+    factory<NotificationProvider> { NotificationProviderImpl(get(), androidApplication()) }
+
+    viewModel { QuoteViewModel(get(), get(), get(), get(), get(), get()) }
 }

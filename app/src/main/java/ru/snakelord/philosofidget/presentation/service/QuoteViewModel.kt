@@ -13,13 +13,15 @@ import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetQuoteUseCase
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
+import ru.snakelord.philosofidget.presentation.notification_builder.NotificationProvider
 
 class QuoteViewModel(
     private val getQuoteUseCase: GetQuoteUseCase,
     private val quoteWidgetStateMapper: QuoteWidgetStateMapper,
     private val workingDispatcher: CoroutineDispatcher,
     private val getKeyUseCase: GetKeyUseCase,
-    private val widgetSettingsInteractor: WidgetSettingsInteractor
+    private val widgetSettingsInteractor: WidgetSettingsInteractor,
+    private val notificationProvider: NotificationProvider
 ) : ViewModel() {
 
     private val quoteStateFlow = MutableStateFlow<QuoteWidgetState>(QuoteWidgetState.Loading)
@@ -33,4 +35,6 @@ class QuoteViewModel(
             quoteStateFlow.emit(quoteWidgetStateMapper.map(quote, widgetParams))
         }
     }
+
+    fun provideNotification() = notificationProvider.buildNotification()
 }

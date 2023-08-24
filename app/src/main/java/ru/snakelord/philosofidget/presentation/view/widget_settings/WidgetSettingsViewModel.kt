@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
@@ -32,8 +31,7 @@ class WidgetSettingsViewModel(
 
     private val widgetConfigurationStateFlow: MutableStateFlow<WidgetConfigurationState> =
         MutableStateFlow(WidgetConfigurationState(targetWidgetId = targetWidgetId, isConfigurationSaved = false))
-
-    val widgetConfigurationState: StateFlow<WidgetConfigurationState> = widgetConfigurationStateFlow.asStateFlow()
+    val widgetConfigurationState = widgetConfigurationStateFlow.asStateFlow()
 
     fun loadQuoteWidgetParams() = viewModelScope.launch(ioDispatcher) {
         quoteWidgetParamsStateFlow.emit(widgetSettingsInteractor.getQuoteWidgetParams())
@@ -43,18 +41,18 @@ class WidgetSettingsViewModel(
         widgetSettingsStateFlow.emit(widgetSettingsInteractor.getWidgetSettings())
     }
 
-    fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) {
+    fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) = viewModelScope.launch(ioDispatcher) {
         when (toggleTarget) {
             ToggleTarget.AUTHOR_VISIBILITY -> widgetSettingsInteractor.setAuthorVisibility(newValue)
         }
         loadQuoteWidgetParams()
     }
 
-    fun onLanguageSelected(language: String) {
+    fun onLanguageSelected(language: String) = viewModelScope.launch(ioDispatcher) {
         widgetSettingsInteractor.setQuoteLanguage(language)
     }
 
-    fun onSliderValueChanged(newValue: Float, seekBarTarget: WidgetSettings.SeekBar.SeekBarTarget) {
+    fun onSliderValueChanged(newValue: Float, seekBarTarget: WidgetSettings.SeekBar.SeekBarTarget) = viewModelScope.launch(ioDispatcher) {
         when (seekBarTarget) {
             QUOTE_TEXT_SIZE -> widgetSettingsInteractor.setQuoteTextSize(newValue)
             QUOTE_AUTHOR_TEXT_SIZE -> widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
@@ -62,11 +60,9 @@ class WidgetSettingsViewModel(
         loadQuoteWidgetParams()
     }
 
-    fun requestWidgetUpdate() {
+    fun requestWidgetUpdate() = viewModelScope.launch {
         if (targetWidgetId != UNDEFINED_WIDGET_ID) {
-            viewModelScope.launch {
-                widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
-            }
+            widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
         }
         widgetUpdater.updateWidget()
     }
