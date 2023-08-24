@@ -12,7 +12,7 @@ import android.os.IBinder
 import android.widget.RemoteViews
 import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.presentation.service.QuoteLoadingService
-import ru.snakelord.philosofidget.presentation.view.MainActivity
+import ru.snakelord.philosofidget.presentation.view.main.MainActivity
 
 class QuotesWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
