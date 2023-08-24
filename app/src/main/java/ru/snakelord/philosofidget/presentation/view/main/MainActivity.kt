@@ -1,4 +1,4 @@
-package ru.snakelord.philosofidget.presentation.view
+package ru.snakelord.philosofidget.presentation.view.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +7,7 @@ import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.presentation.view.widget_settings.WidgetSettingsFragment
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
