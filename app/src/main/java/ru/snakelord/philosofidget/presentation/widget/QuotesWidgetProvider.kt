@@ -15,6 +15,9 @@ import ru.snakelord.philosofidget.presentation.service.QuoteLoadingService
 import ru.snakelord.philosofidget.presentation.view.main.MainActivity
 
 class QuotesWidgetProvider : AppWidgetProvider() {
+
+    private var serviceConnection: QuoteLoadingServiceConnection? = null
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         appWidgetIds.forEach { appWidgetId ->
             val remoteViews = RemoteViews(context.packageName, R.layout.widget_quote)
@@ -48,13 +51,21 @@ class QuotesWidgetProvider : AppWidgetProvider() {
         widgetViewDelegate: WidgetViewDelegate
     ) {
         val serviceIntent = Intent(context, QuoteLoadingService::class.java)
-        context.bindService(
-            serviceIntent,
-            QuoteLoadingServiceConnection(widgetId, widgetViewDelegate) {
-                appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.remoteViews)
-            },
-            BIND_AUTO_CREATE
-        )
+        serviceConnection = QuoteLoadingServiceConnection(widgetId, widgetViewDelegate) {
+            appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.remoteViews)
+            unbindServiceConnection(context)
+        }
+        serviceConnection?.let { context.bindService(serviceIntent, it, BIND_AUTO_CREATE) }
+    }
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray?) {
+        super.onDeleted(context, appWidgetIds)
+        unbindServiceConnection(context)
+    }
+
+    private fun unbindServiceConnection(context: Context) {
+        serviceConnection?.let { context.unbindService(it) }
+        serviceConnection = null
     }
 
     private class QuoteLoadingServiceConnection(

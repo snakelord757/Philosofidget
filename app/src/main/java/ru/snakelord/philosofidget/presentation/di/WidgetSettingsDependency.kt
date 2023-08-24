@@ -11,6 +11,10 @@ import ru.snakelord.philosofidget.data.repository.WidgetSettingsRepositoryImpl
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractorImpl
 import ru.snakelord.philosofidget.domain.repository.WidgetSettingsRepository
+import ru.snakelord.philosofidget.presentation.factory.DialogStateFactory
+import ru.snakelord.philosofidget.presentation.factory.DialogStateFactoryImpl
+import ru.snakelord.philosofidget.presentation.permission_checker.PermissionChecker
+import ru.snakelord.philosofidget.presentation.permission_checker.PermissionCheckerImpl
 import ru.snakelord.philosofidget.presentation.view.widget_settings.WidgetSettingsViewModel
 
 private const val QUOTE_WIDGET_SETTINGS_PREFS = "QUOTE_WIDGET_SETTINGS_PREFS"
@@ -24,5 +28,18 @@ val widgetSettingsModule = module {
 
     factory<WidgetSettingsInteractor> { WidgetSettingsInteractorImpl(get(), get()) }
 
-    viewModel { (targetWidgetId: Int) -> WidgetSettingsViewModel(get(), get(), get(), targetWidgetId) }
+    factory<PermissionChecker> { PermissionCheckerImpl(androidApplication()) }
+
+    factory<DialogStateFactory> { DialogStateFactoryImpl(get()) }
+
+    viewModel { (targetWidgetId: Int) ->
+        WidgetSettingsViewModel(
+            widgetSettingsInteractor = get(),
+            ioDispatcher = get(),
+            widgetUpdater = get(),
+            permissionChecker = get(),
+            dialogStateFactory = get(),
+            targetWidgetId = targetWidgetId
+        )
+    }
 }
