@@ -4,15 +4,17 @@ import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
 
 interface WidgetSettingsInteractor {
-    fun setAuthorVisibility(isAuthorVisible: Boolean)
+    suspend fun setAuthorVisibility(isAuthorVisible: Boolean)
 
-    fun setQuoteLanguage(language: String)
+    suspend fun setQuoteLanguage(language: String)
 
-    fun setQuoteTextSize(quoteTextSize: Float)
+    suspend fun setQuoteTextSize(quoteTextSize: Float)
 
-    fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
+    suspend fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
 
-    fun getWidgetSettings(): Array<WidgetSettings>
+    suspend fun setWidgetUpdateTime(updateTime: Long)
 
-    fun getQuoteWidgetParams(): QuoteWidgetParams
+    suspend fun getWidgetSettings(): Array<WidgetSettings>
+
+    suspend fun getQuoteWidgetParams(): QuoteWidgetParams
 }
