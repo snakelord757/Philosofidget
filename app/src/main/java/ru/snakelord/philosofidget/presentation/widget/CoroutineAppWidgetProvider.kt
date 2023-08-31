@@ -14,7 +14,12 @@ abstract class CoroutineAppWidgetProvider : AppWidgetProvider() {
 
     @CallSuper
     override fun onDisabled(context: Context) {
-        ioScope.cancel()
+        ioScope.cancel(CANCEL_MESSAGE)
+        mainScope.cancel(CANCEL_MESSAGE)
         super.onDisabled(context)
+    }
+
+    private companion object {
+        const val CANCEL_MESSAGE = "Job canceled 'cause widget removed"
     }
 }

@@ -1,23 +1,23 @@
 package ru.snakelord.philosofidget.data.datasource.settings
 
 interface WidgetSettingsDataSource {
-    fun getAuthorVisibility(): Boolean
+    suspend fun getAuthorVisibility(): Boolean
 
-    fun setAuthorVisibility(isAuthorVisible: Boolean)
+    suspend fun setAuthorVisibility(isAuthorVisible: Boolean)
 
-    fun getQuoteLanguage(): String
+    suspend fun getQuoteLanguage(): String
 
-    fun setQuoteLanguage(language: String)
+    suspend fun setQuoteLanguage(language: String)
 
-    fun setQuoteTextSize(quoteTextSize: Float)
+    suspend fun setQuoteTextSize(quoteTextSize: Float)
 
-    fun getQuoteTextSize(): Float
+    suspend fun getQuoteTextSize(): Float
 
-    fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
+    suspend fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
+
+    suspend fun getQuoteAuthorTextSize(): Float
 
     suspend fun setWidgetUpdateTime(updateTime: Long)
 
     suspend fun getWidgetUpdateTime(): Long
-
-    fun getQuoteAuthorTextSize(): Float
 }

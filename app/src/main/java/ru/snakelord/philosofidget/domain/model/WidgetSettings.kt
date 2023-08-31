@@ -30,9 +30,5 @@ sealed class WidgetSettings {
             QUOTE_AUTHOR_TEXT_SIZE,
             QUOTE_UPDATE_TIME
         }
-
-        companion object {
-            const val VALUE_UNDEFINED = -1f
-        }
     }
 }

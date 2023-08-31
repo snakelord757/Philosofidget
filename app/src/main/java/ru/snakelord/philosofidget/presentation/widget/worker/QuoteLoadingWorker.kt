@@ -15,7 +15,7 @@ import ru.snakelord.philosofidget.domain.model.GetQuoteParams
 import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetQuoteUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.StoreQuoteUseCase
-import ru.snakelord.philosofidget.presentation.widget.WidgetUpdater
+import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdater
 import java.util.concurrent.TimeUnit
 
 class QuoteLoadingWorker(
