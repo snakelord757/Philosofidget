@@ -9,4 +9,5 @@
     <string name="widget_spinner_lang_english">English</string>
     <string name="widget_settings_quote_text_size">Размер текста цитаты</string>
     <string name="widget_settings_quote_author_text_size">Размер текста автора</string>
+    <string name="widget_settings_update_time">Время обновления виджета (в часах)</string>
 </resources>

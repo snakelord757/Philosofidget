@@ -6,15 +6,16 @@ import kotlin.math.roundToInt
 
 class SliderViewHolder(
     private val binding: WidgetSettingsSliderBinding,
-    private val onSliderValueChangedCallback: (Float, WidgetSettings.SeekBar.SeekBarTarget) -> Unit
-) : WidgetSettingsBaseViewHolder<WidgetSettings.SeekBar>(binding) {
-    override fun bind(item: WidgetSettings.SeekBar) = with(binding) {
+    private val onSliderValueChangedCallback: (Float, WidgetSettings.Slider.SliderTarget) -> Unit
+) : WidgetSettingsBaseViewHolder<WidgetSettings.Slider>(binding) {
+    override fun bind(item: WidgetSettings.Slider) = with(binding) {
         sliderTitle.text = item.title
         minValue.text = item.minValue.roundToInt().toString()
         maxValue.text = item.maxValue.roundToInt().toString()
         slider.valueTo = item.maxValue
         slider.valueFrom = item.minValue
         slider.value = item.currentValue
-        slider.addOnChangeListener { _, value, _ -> onSliderValueChangedCallback.invoke(value, item.seekBarTarget) }
+        if (item.formatToInt) slider.setLabelFormatter { value -> value.roundToInt().toString() }
+        slider.addOnChangeListener { _, value, _ -> onSliderValueChangedCallback.invoke(value, item.sliderTarget) }
     }
 }

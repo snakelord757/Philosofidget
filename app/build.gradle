@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'kotlinx-serialization'
 }
 
 android {
@@ -48,6 +49,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
+    implementation 'androidx.work:work-runtime-ktx:2.8.1'
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'

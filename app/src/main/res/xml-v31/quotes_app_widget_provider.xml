@@ -6,5 +6,4 @@
     android:minWidth="@dimen/widget_min_width"
     android:previewLayout="@layout/widget_quote_preview"
     android:resizeMode="vertical|horizontal"
-    android:updatePeriodMillis="@integer/widget_update_period"
     android:widgetCategory="home_screen" />
