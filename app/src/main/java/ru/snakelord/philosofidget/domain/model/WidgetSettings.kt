@@ -17,16 +17,22 @@ sealed class WidgetSettings {
         val variants: List<String>
     ) : WidgetSettings()
 
-    data class SeekBar(
+    data class Slider(
         val title: String,
         val currentValue: Float,
         val minValue: Float,
         val maxValue: Float,
-        val seekBarTarget: SeekBarTarget
+        val formatToInt: Boolean = false,
+        val sliderTarget: SliderTarget
     ) : WidgetSettings() {
-        enum class SeekBarTarget {
+        enum class SliderTarget {
             QUOTE_TEXT_SIZE,
-            QUOTE_AUTHOR_TEXT_SIZE
+            QUOTE_AUTHOR_TEXT_SIZE,
+            QUOTE_UPDATE_TIME
+        }
+
+        companion object {
+            const val VALUE_UNDEFINED = -1f
         }
     }
 }

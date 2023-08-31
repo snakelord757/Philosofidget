@@ -15,5 +15,9 @@ interface WidgetSettingsDataSource {
 
     fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
 
+    suspend fun setWidgetUpdateTime(updateTime: Long)
+
+    suspend fun getWidgetUpdateTime(): Long
+
     fun getQuoteAuthorTextSize(): Float
 }

@@ -5,11 +5,19 @@ import retrofit2.http.Query
 import ru.snakelord.philosofidget.data.model.QuoteDTO
 
 interface QuoteService {
-    @GET("1.0/")
+    @GET(REQUEST_PATH)
     suspend fun getQuote(
-        @Query("method") method: String,
-        @Query("format") format: String,
-        @Query("key") key: Int,
-        @Query("lang") lang: String
+        @Query(QUERY_PARAM_METHOD) method: String,
+        @Query(QUERY_PARAM_FORMAT) format: String,
+        @Query(QUERY_PARAM_KEY) key: Int,
+        @Query(QUERY_PARAM_LANG) lang: String
     ): QuoteDTO
+
+    private companion object {
+        const val REQUEST_PATH = "1.0/"
+        const val QUERY_PARAM_METHOD = "method"
+        const val QUERY_PARAM_FORMAT = "format"
+        const val QUERY_PARAM_KEY = "key"
+        const val QUERY_PARAM_LANG = "lang"
+    }
 }

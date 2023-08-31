@@ -11,17 +11,19 @@ class WidgetSettingsInteractorImpl(
     private val widgetSettingsRepository: WidgetSettingsRepository,
     private val stringResolver: StringResolver
 ) : WidgetSettingsInteractor {
-    override fun setAuthorVisibility(isAuthorVisible: Boolean) = widgetSettingsRepository.setAuthorVisibility(isAuthorVisible)
+    override suspend fun setAuthorVisibility(isAuthorVisible: Boolean) = widgetSettingsRepository.setAuthorVisibility(isAuthorVisible)
 
-    override fun setQuoteLanguage(language: String) = widgetSettingsRepository.setQuoteLanguage(language)
+    override suspend fun setQuoteLanguage(language: String) = widgetSettingsRepository.setQuoteLanguage(language)
 
-    override fun setQuoteTextSize(quoteTextSize: Float) = widgetSettingsRepository.setQuoteTextSize(quoteTextSize)
+    override suspend fun setQuoteTextSize(quoteTextSize: Float) = widgetSettingsRepository.setQuoteTextSize(quoteTextSize)
 
-    override fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float) = widgetSettingsRepository.setQuoteAuthorTextSize(quoteAuthorTextSize)
+    override suspend fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float) = widgetSettingsRepository.setQuoteAuthorTextSize(quoteAuthorTextSize)
 
-    override fun getWidgetSettings(): Array<WidgetSettings> = widgetSettingsRepository.getWidgetSettings()
+    override suspend fun setWidgetUpdateTime(updateTime: Long) = widgetSettingsRepository.setWidgetUpdateTime(updateTime)
 
-    override fun getQuoteWidgetParams(): QuoteWidgetParams {
+    override suspend fun getWidgetSettings(): Array<WidgetSettings> = widgetSettingsRepository.getWidgetSettings()
+
+    override suspend fun getQuoteWidgetParams(): QuoteWidgetParams {
         val languagesMap = listOf(
             stringResolver.getString(R.string.widget_spinner_lang_russian),
             stringResolver.getString(R.string.widget_spinner_lang_english)
@@ -32,7 +34,8 @@ class WidgetSettingsInteractorImpl(
             isAuthorVisible = widgetSettingsRepository.getAuthorVisibility(),
             quoteLang = languagesMap.getOrDefault(widgetSettingsRepository.getQuoteLanguage(), Lang.RU),
             quoteTextSize = widgetSettingsRepository.getQuoteTextSize(),
-            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize()
+            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize(),
+            updateTime = widgetSettingsRepository.getWidgetUpdateTime()
         )
     }
 }
