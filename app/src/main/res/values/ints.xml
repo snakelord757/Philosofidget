@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!--Try to update widget every 5 hours-->
-    <integer name="widget_update_period">18000000</integer>
-</resources>

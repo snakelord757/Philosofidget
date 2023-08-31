@@ -15,7 +15,7 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarge
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Toggle.ToggleTarget
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
-import ru.snakelord.philosofidget.presentation.widget.WidgetUpdater
+import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdater
 import kotlin.math.roundToLong
 
 class WidgetSettingsViewModel(
