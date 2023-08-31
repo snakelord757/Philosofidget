@@ -10,11 +10,13 @@ import kotlinx.coroutines.launch
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
-import ru.snakelord.philosofidget.domain.model.WidgetSettings.SeekBar.SeekBarTarget.QUOTE_AUTHOR_TEXT_SIZE
-import ru.snakelord.philosofidget.domain.model.WidgetSettings.SeekBar.SeekBarTarget.QUOTE_TEXT_SIZE
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_AUTHOR_TEXT_SIZE
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_TEXT_SIZE
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Toggle.ToggleTarget
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
 import ru.snakelord.philosofidget.presentation.widget.WidgetUpdater
+import kotlin.math.roundToLong
 
 class WidgetSettingsViewModel(
     private val widgetSettingsInteractor: WidgetSettingsInteractor,
@@ -52,10 +54,11 @@ class WidgetSettingsViewModel(
         widgetSettingsInteractor.setQuoteLanguage(language)
     }
 
-    fun onSliderValueChanged(newValue: Float, seekBarTarget: WidgetSettings.SeekBar.SeekBarTarget) = viewModelScope.launch(ioDispatcher) {
-        when (seekBarTarget) {
+    fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = viewModelScope.launch(ioDispatcher) {
+        when (sliderTarget) {
             QUOTE_TEXT_SIZE -> widgetSettingsInteractor.setQuoteTextSize(newValue)
             QUOTE_AUTHOR_TEXT_SIZE -> widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
+            QUOTE_UPDATE_TIME -> widgetSettingsInteractor.setWidgetUpdateTime(newValue.roundToLong())
         }
         loadQuoteWidgetParams()
     }

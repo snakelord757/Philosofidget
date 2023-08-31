@@ -3,21 +3,25 @@ package ru.snakelord.philosofidget.domain.repository
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
 
 interface WidgetSettingsRepository {
-    fun getAuthorVisibility(): Boolean
+    suspend fun getAuthorVisibility(): Boolean
 
-    fun setAuthorVisibility(isAuthorVisible: Boolean)
+    suspend fun setAuthorVisibility(isAuthorVisible: Boolean)
 
-    fun getQuoteLanguage(): String
+    suspend fun getQuoteLanguage(): String
 
-    fun setQuoteLanguage(language: String)
+    suspend fun setQuoteLanguage(language: String)
 
-    fun setQuoteTextSize(quoteTextSize: Float)
+    suspend fun setQuoteTextSize(quoteTextSize: Float)
 
-    fun getQuoteTextSize(): Float
+    suspend fun getQuoteTextSize(): Float
 
-    fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
+    suspend fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float)
 
-    fun getQuoteAuthorTextSize(): Float
+    suspend fun getQuoteAuthorTextSize(): Float
 
-    fun getWidgetSettings(): Array<WidgetSettings>
+    suspend fun setWidgetUpdateTime(updateTime: Long)
+
+    suspend fun getWidgetUpdateTime(): Long
+
+    suspend fun getWidgetSettings(): Array<WidgetSettings>
 }

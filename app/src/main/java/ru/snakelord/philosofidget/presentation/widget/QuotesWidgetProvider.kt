@@ -1,88 +1,84 @@
 package ru.snakelord.philosofidget.presentation.widget
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
-import android.content.Context.BIND_AUTO_CREATE
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
-import android.widget.RemoteViews
-import ru.snakelord.philosofidget.R
-import ru.snakelord.philosofidget.presentation.service.QuoteLoadingService
-import ru.snakelord.philosofidget.presentation.view.main.MainActivity
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.WorkManager
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
+import ru.snakelord.philosofidget.domain.usecase.quote.GetStoredQuoteUseCase
+import ru.snakelord.philosofidget.domain.usecase.quote.GetUpdateTimeUseCase
+import ru.snakelord.philosofidget.domain.usecase.quote.RemoveStoredQuoteUseCase
+import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
+import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
+import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
+import ru.snakelord.philosofidget.presentation.widget.worker.QuoteLoadingWorker
 
-class QuotesWidgetProvider : AppWidgetProvider() {
+class QuotesWidgetProvider : CoroutineAppWidgetProvider(), KoinComponent {
 
-    private var serviceConnection: QuoteLoadingServiceConnection? = null
+    private val getStoreQuoteUseCase by inject<GetStoredQuoteUseCase>()
+    private val widgetSettingsInteractor by inject<WidgetSettingsInteractor>()
+    private val quoteWidgetStateMapper by inject<QuoteWidgetStateMapper>()
+    private val widgetViewDelegate by inject<WidgetViewDelegate>()
+    private val removeStoredQuoteUseCase by inject<RemoveStoredQuoteUseCase>()
+    private val getUpdateTimeUseCase by inject<GetUpdateTimeUseCase>()
+
+    override fun onEnabled(context: Context) = startQuoteLoadingWorker(context)
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        appWidgetIds.forEach { appWidgetId ->
-            val remoteViews = RemoteViews(context.packageName, R.layout.widget_quote)
-            val applicationContext = context.applicationContext
-            setupOnWidgetClickListener(applicationContext, remoteViews)
-            startService(
-                applicationContext,
-                appWidgetManager,
-                appWidgetId,
-                WidgetViewDelegate(remoteViews)
-            )
-        }
-    }
-
-    private fun setupOnWidgetClickListener(context: Context, remoteViews: RemoteViews) {
-        remoteViews.setOnClickPendingIntent(
-            R.id.widgetRoot,
-            PendingIntent.getActivities(
-                context,
-                0,
-                arrayOf(Intent(context, MainActivity::class.java)),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        )
-    }
-
-    private fun startService(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        widgetId: Int,
-        widgetViewDelegate: WidgetViewDelegate
-    ) {
-        val serviceIntent = Intent(context, QuoteLoadingService::class.java)
-        serviceConnection = QuoteLoadingServiceConnection(widgetId, widgetViewDelegate) {
-            appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.remoteViews)
-            unbindServiceConnection(context)
-        }
-        serviceConnection?.let { context.bindService(serviceIntent, it, BIND_AUTO_CREATE) }
-    }
-
-    override fun onDeleted(context: Context, appWidgetIds: IntArray?) {
-        super.onDeleted(context, appWidgetIds)
-        unbindServiceConnection(context)
-    }
-
-    private fun unbindServiceConnection(context: Context) {
-        serviceConnection?.let { context.unbindService(it) }
-        serviceConnection = null
-    }
-
-    private class QuoteLoadingServiceConnection(
-        private val widgetId: Int,
-        private val widgetViewDelegate: WidgetViewDelegate,
-        private val onQuoteLoadedCallback: (() -> Unit)?
-    ) : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val quoteServiceDelegate = (service as? QuoteLoadingService.QuoteLoadingServiceBinder)?.getQuoteServiceDelegate()
-            quoteServiceDelegate?.let {
-                it.addWidgetId(widgetId)
-                it.addWidgetViewDelegate(widgetViewDelegate)
-                it.addOnQuoteLoadedCallback(onQuoteLoadedCallback)
-                it.loadQuote()
+        appWidgetIds.forEach { widgetId ->
+            ioScope.launch {
+                setWidgetState(QuoteWidgetState.Loading, appWidgetManager, widgetId)
+                val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
+                val shouldRestart = widgetViewDelegate.selectedLanguage != quoteWidgetParams.quoteLang
+                if (shouldRestart) {
+                    widgetViewDelegate.selectedLanguage = quoteWidgetParams.quoteLang
+                    startQuoteLoadingWorker(context, true)
+                } else {
+                    val quote = getStoreQuoteUseCase.invoke() ?: return@launch
+                    val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
+                    setWidgetState(quoteWidgetState, appWidgetManager, widgetId)
+                }
             }
         }
+    }
 
-        override fun onServiceDisconnected(name: ComponentName?) = Unit
+    private fun setWidgetState(quoteWidgetState: QuoteWidgetState, appWidgetManager: AppWidgetManager, appWidgetId: Int) = with(widgetViewDelegate) {
+        mainScope.launch {
+            setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
+            if (quoteWidgetState is QuoteWidgetState.WidgetState) {
+                setQuote(quoteWidgetState.quote)
+                isAuthorVisible(quoteWidgetState.isAuthorVisible)
+                setQuoteTextSize(quoteWidgetState.quoteTextSize)
+                setQuoteAuthorTextSize(quoteWidgetState.quoteAuthorTextSize)
+            }
+            appWidgetManager.updateAppWidget(appWidgetId, widgetView)
+        }
+    }
+
+    private fun startQuoteLoadingWorker(
+        context: Context,
+        shouldRestart: Boolean = false
+    ) {
+        ioScope.launch {
+            WorkManager.getInstance(context)
+                .enqueueUniquePeriodicWork(
+                    LOAD_QUOTE_WORKER_NAME,
+                    if (shouldRestart) ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE else ExistingPeriodicWorkPolicy.UPDATE,
+                    QuoteLoadingWorker.createQuoteWidgetWorker(getUpdateTimeUseCase.invoke())
+                )
+        }
+    }
+
+    override fun onDisabled(context: Context) {
+        ioScope.launch { removeStoredQuoteUseCase.invoke() }
+        WorkManager.getInstance(context).cancelUniqueWork(LOAD_QUOTE_WORKER_NAME)
+        super.onDisabled(context)
+    }
+
+    private companion object {
+        const val LOAD_QUOTE_WORKER_NAME = "LOAD_QUOTE_WORKER_NAME"
     }
 }
