@@ -52,8 +52,8 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
             when (it) {
                 WidgetPayload.QUOTE -> widgetViewDelegate.setQuote(widgetState.quote)
                 WidgetPayload.QUOTE_TEXT_SIZE -> widgetViewDelegate.setQuoteTextSize(widgetState.quoteTextSize)
-                WidgetPayload.AUTHOR_VISIBILITY -> widgetViewDelegate.setQuoteTextSize(widgetState.quoteTextSize)
-                WidgetPayload.AUTHOR_TEXT_SIZE -> widgetViewDelegate.isAuthorVisible(widgetState.isAuthorVisible)
+                WidgetPayload.AUTHOR_VISIBILITY -> widgetViewDelegate.isAuthorVisible(widgetState.isAuthorVisible)
+                WidgetPayload.AUTHOR_TEXT_SIZE -> widgetViewDelegate.setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
                 else -> Unit
             }
         }
