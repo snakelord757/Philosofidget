@@ -27,37 +27,24 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
 
     override fun onEnabled(context: Context) = startQuoteLoadingWorker(context)
 
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        appWidgetIds.forEach { widgetId ->
-            doOnIo {
-                setWidgetState(
-                    context = context,
-                    quoteWidgetState = QuoteWidgetState.Loading,
-                    appWidgetManager = appWidgetManager,
-                    appWidgetId = widgetId
-                )
-                val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
-                val quote = getStoreQuoteUseCase.invoke() ?: return@doOnIo
-                val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
-                setWidgetState(
-                    context = context,
-                    quoteWidgetState = quoteWidgetState,
-                    appWidgetManager = appWidgetManager,
-                    appWidgetId = widgetId
-                )
-            }
+    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) = appWidgetIds.forEach { widgetId ->
+        doOnIo {
+            setWidgetState(context = context, quoteWidgetState = QuoteWidgetState.Loading)
+            doOnMain { appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView) }
+            val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
+            val quote = getStoreQuoteUseCase.invoke() ?: return@doOnIo
+            val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
+            setWidgetState(context = context, quoteWidgetState = quoteWidgetState)
+            doOnMain { appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView) }
         }
     }
 
     private fun setWidgetState(
         context: Context,
         quoteWidgetState: QuoteWidgetState,
-        appWidgetManager: AppWidgetManager,
-        appWidgetId: Int
     ) = doOnMain {
         widgetViewDelegate.setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
         if (quoteWidgetState is QuoteWidgetState.WidgetState) setupWidgetView(quoteWidgetState, context)
-        appWidgetManager.updateAppWidget(appWidgetId, widgetViewDelegate.widgetView)
     }
 
     private fun setupWidgetView(widgetState: QuoteWidgetState.WidgetState, context: Context) {

@@ -8,9 +8,9 @@ import ru.snakelord.philosofidget.presentation.widget.QuotesWidgetProvider
 import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdater.Companion.WIDGET_PAYLOADS_EXTRA
 
 class WidgetUpdaterImpl(private val context: Context) : WidgetUpdater {
-    override fun updateQuote() = updateQuote(setOf(WidgetPayload.QUOTE))
+    override fun updateQuote() = updateWidget(setOf(WidgetPayload.QUOTE))
 
-    override fun updateQuote(widgetPayloads: Set<WidgetPayload>) {
+    override fun updateWidget(widgetPayloads: Set<WidgetPayload>) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, QuotesWidgetProvider::class.java))
         val updateWidgetIntent = Intent(context, QuotesWidgetProvider::class.java).apply {

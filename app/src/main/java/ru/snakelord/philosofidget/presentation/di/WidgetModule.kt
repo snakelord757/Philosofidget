@@ -54,7 +54,7 @@ val widgetModule = module {
             .create(QuoteService::class.java)
     }
 
-    factory<SharedPreferences>(named(QUOTE_WIDGET_SHARED_PREFS)) {
+    single<SharedPreferences>(named(QUOTE_WIDGET_SHARED_PREFS)) {
         androidApplication().getSharedPreferences(
             QUOTE_WIDGET_SHARED_PREFS,
             Context.MODE_PRIVATE
