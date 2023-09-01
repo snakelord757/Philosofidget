@@ -11,6 +11,4 @@ sealed class QuoteWidgetState {
         val quoteTextSize: Float,
         val quoteAuthorTextSize: Float
     ) : QuoteWidgetState()
-
-    object Error : QuoteWidgetState()
 }

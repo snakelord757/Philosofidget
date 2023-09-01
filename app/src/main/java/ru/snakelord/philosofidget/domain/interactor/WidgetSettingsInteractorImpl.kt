@@ -34,8 +34,7 @@ class WidgetSettingsInteractorImpl(
             isAuthorVisible = widgetSettingsRepository.getAuthorVisibility(),
             quoteLang = languagesMap.getOrDefault(widgetSettingsRepository.getQuoteLanguage(), Lang.RU),
             quoteTextSize = widgetSettingsRepository.getQuoteTextSize(),
-            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize(),
-            updateTime = widgetSettingsRepository.getWidgetUpdateTime()
+            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize()
         )
     }
 }

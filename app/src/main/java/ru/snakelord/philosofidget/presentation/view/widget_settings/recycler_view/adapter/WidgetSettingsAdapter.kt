@@ -23,26 +23,22 @@ class WidgetSettingsAdapter(
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WidgetSettingsBaseViewHolder<WidgetSettings> {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val viewHolder = when (viewType) {
-            TOGGLE_VIEW_TYPE -> ToggleViewHolder(
+        return when (WidgetSettingsViewType.values()[viewType]) {
+            WidgetSettingsViewType.TOGGLE -> ToggleViewHolder(
                 binding = WidgetSettingsToggleBinding.inflate(layoutInflater, parent, false),
                 toggleCallback = toggleCallback
             )
 
-            SPINNER_VIEW_TYPE -> SpinnerViewHolder(
+            WidgetSettingsViewType.SPINNER -> SpinnerViewHolder(
                 binding = WidgetSettingsSpinnerBinding.inflate(layoutInflater, parent, false),
                 languageSpinnerCallback = languageSpinnerCallback
             )
 
-            SEEKBAR_VIEW_TYPE -> SliderViewHolder(
+            WidgetSettingsViewType.SLIDER -> SliderViewHolder(
                 binding = WidgetSettingsSliderBinding.inflate(layoutInflater, parent, false),
                 onSliderValueChangedCallback = sliderCallback
             )
-
-            else -> error("Unsupported viewType: $viewType. Check log for details")
-        }
-        return viewHolder as? WidgetSettingsBaseViewHolder<WidgetSettings>
-            ?: error("Unable to cast $viewHolder to WidgetSettingsBaseViewHolder<WidgetSettings>")
+        } as WidgetSettingsBaseViewHolder<WidgetSettings>
     }
 
     override fun onBindViewHolder(holder: WidgetSettingsBaseViewHolder<WidgetSettings>, position: Int) {
@@ -50,11 +46,12 @@ class WidgetSettingsAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (widgetSettings[position]) {
-            is WidgetSettings.Toggle -> TOGGLE_VIEW_TYPE
-            is WidgetSettings.Spinner -> SPINNER_VIEW_TYPE
-            is WidgetSettings.Slider -> SEEKBAR_VIEW_TYPE
+        val type = when (widgetSettings[position]) {
+            is WidgetSettings.Toggle -> WidgetSettingsViewType.TOGGLE
+            is WidgetSettings.Spinner -> WidgetSettingsViewType.SPINNER
+            is WidgetSettings.Slider -> WidgetSettingsViewType.SLIDER
         }
+        return type.ordinal
     }
 
     override fun getItemCount(): Int = widgetSettings.size
@@ -65,9 +62,9 @@ class WidgetSettingsAdapter(
         notifyDataSetChanged()
     }
 
-    private companion object {
-        const val TOGGLE_VIEW_TYPE = 0
-        const val SPINNER_VIEW_TYPE = 1
-        const val SEEKBAR_VIEW_TYPE = 2
+    private enum class WidgetSettingsViewType {
+        TOGGLE,
+        SPINNER,
+        SLIDER
     }
 }

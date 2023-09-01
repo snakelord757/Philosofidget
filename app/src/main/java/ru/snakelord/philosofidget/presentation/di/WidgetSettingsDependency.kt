@@ -17,7 +17,7 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.WidgetSettin
 private const val QUOTE_WIDGET_SETTINGS_PREFS = "QUOTE_WIDGET_SETTINGS_PREFS"
 
 val widgetSettingsModule = module {
-    factory<SharedPreferences>(named(QUOTE_WIDGET_SETTINGS_PREFS)) {
+    single<SharedPreferences>(named(QUOTE_WIDGET_SETTINGS_PREFS)) {
         androidApplication().getSharedPreferences(
             QUOTE_WIDGET_SETTINGS_PREFS,
             Context.MODE_PRIVATE

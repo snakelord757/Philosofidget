@@ -8,8 +8,6 @@ import ru.snakelord.philosofidget.domain.model.Quote
 interface WidgetViewDelegate {
     val widgetView: RemoteViews
 
-    var selectedLanguage: Lang
-
     fun setProgressVisibility(isProgressVisible: Boolean)
 
     fun setQuote(quote: Quote)

@@ -85,7 +85,7 @@ class WidgetSettingsViewModel(
         if (targetWidgetId != UNDEFINED_WIDGET_ID) {
             widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
         }
-        widgetUpdater.updateQuote(widgetPayloads)
+        widgetUpdater.updateWidget(widgetPayloads)
         widgetPayloads.clear()
     }
 
