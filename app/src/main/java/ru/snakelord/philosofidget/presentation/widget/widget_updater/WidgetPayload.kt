@@ -1,0 +1,14 @@
+package ru.snakelord.philosofidget.presentation.widget.widget_updater
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+enum class WidgetPayload : Parcelable {
+    QUOTE,
+    QUOTE_TEXT_SIZE,
+    AUTHOR_VISIBILITY,
+    AUTHOR_TEXT_SIZE,
+    QUOTE_LANGUAGE,
+    QUOTE_UPDATE_TIME
+}
