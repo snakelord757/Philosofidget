@@ -39,7 +39,7 @@ class QuoteLoadingWorker(
                 )
             )
         )
-        widgetUpdater.updateWidget()
+        widgetUpdater.updateQuote()
         Result.success()
     } catch (exception: Exception) {
         Log.e("workerError", exception.toString())

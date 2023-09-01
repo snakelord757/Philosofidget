@@ -15,6 +15,7 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarge
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Toggle.ToggleTarget
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
+import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetPayload
 import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdater
 import kotlin.math.roundToLong
 
@@ -35,6 +36,8 @@ class WidgetSettingsViewModel(
         MutableStateFlow(WidgetConfigurationState(targetWidgetId = targetWidgetId, isConfigurationSaved = false))
     val widgetConfigurationState = widgetConfigurationStateFlow.asStateFlow()
 
+    private val widgetPayloads = mutableSetOf<WidgetPayload>()
+
     fun loadQuoteWidgetParams() = viewModelScope.launch(ioDispatcher) {
         quoteWidgetParamsStateFlow.emit(widgetSettingsInteractor.getQuoteWidgetParams())
     }
@@ -45,20 +48,35 @@ class WidgetSettingsViewModel(
 
     fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) = viewModelScope.launch(ioDispatcher) {
         when (toggleTarget) {
-            ToggleTarget.AUTHOR_VISIBILITY -> widgetSettingsInteractor.setAuthorVisibility(newValue)
+            ToggleTarget.AUTHOR_VISIBILITY -> {
+                widgetSettingsInteractor.setAuthorVisibility(newValue)
+                widgetPayloads.add(WidgetPayload.AUTHOR_VISIBILITY)
+            }
         }
         loadQuoteWidgetParams()
     }
 
     fun onLanguageSelected(language: String) = viewModelScope.launch(ioDispatcher) {
         widgetSettingsInteractor.setQuoteLanguage(language)
+        widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
     }
 
     fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = viewModelScope.launch(ioDispatcher) {
         when (sliderTarget) {
-            QUOTE_TEXT_SIZE -> widgetSettingsInteractor.setQuoteTextSize(newValue)
-            QUOTE_AUTHOR_TEXT_SIZE -> widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
-            QUOTE_UPDATE_TIME -> widgetSettingsInteractor.setWidgetUpdateTime(newValue.roundToLong())
+            QUOTE_TEXT_SIZE -> {
+                widgetSettingsInteractor.setQuoteTextSize(newValue)
+                widgetPayloads.add(WidgetPayload.QUOTE_TEXT_SIZE)
+            }
+
+            QUOTE_AUTHOR_TEXT_SIZE -> {
+                widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
+                widgetPayloads.add(WidgetPayload.AUTHOR_TEXT_SIZE)
+            }
+
+            QUOTE_UPDATE_TIME -> {
+                widgetSettingsInteractor.setWidgetUpdateTime(newValue.roundToLong())
+                widgetPayloads.add(WidgetPayload.QUOTE_UPDATE_TIME)
+            }
         }
         loadQuoteWidgetParams()
     }
@@ -67,7 +85,8 @@ class WidgetSettingsViewModel(
         if (targetWidgetId != UNDEFINED_WIDGET_ID) {
             widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
         }
-        widgetUpdater.updateWidget()
+        widgetUpdater.updateQuote(widgetPayloads)
+        widgetPayloads.clear()
     }
 
     companion object {

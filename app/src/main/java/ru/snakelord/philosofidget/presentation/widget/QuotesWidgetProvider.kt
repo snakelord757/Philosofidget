@@ -4,7 +4,6 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkManager
-import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
@@ -14,9 +13,10 @@ import ru.snakelord.philosofidget.domain.usecase.quote.RemoveStoredQuoteUseCase
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
+import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetPayload
 import ru.snakelord.philosofidget.presentation.widget.worker.QuoteLoadingWorker
 
-class QuotesWidgetProvider : CoroutineAppWidgetProvider(), KoinComponent {
+class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
 
     private val getStoreQuoteUseCase by inject<GetStoredQuoteUseCase>()
     private val widgetSettingsInteractor by inject<WidgetSettingsInteractor>()
@@ -29,51 +29,66 @@ class QuotesWidgetProvider : CoroutineAppWidgetProvider(), KoinComponent {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         appWidgetIds.forEach { widgetId ->
-            ioScope.launch {
-                setWidgetState(QuoteWidgetState.Loading, appWidgetManager, widgetId)
+            doOnIo {
+                setWidgetState(
+                    context = context,
+                    quoteWidgetState = QuoteWidgetState.Loading,
+                    appWidgetManager = appWidgetManager,
+                    appWidgetId = widgetId
+                )
                 val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
-                val shouldRestart = widgetViewDelegate.selectedLanguage != quoteWidgetParams.quoteLang
-                if (shouldRestart) {
-                    widgetViewDelegate.selectedLanguage = quoteWidgetParams.quoteLang
-                    startQuoteLoadingWorker(context, true)
-                } else {
-                    val quote = getStoreQuoteUseCase.invoke() ?: return@launch
-                    val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
-                    setWidgetState(quoteWidgetState, appWidgetManager, widgetId)
-                }
+                val quote = getStoreQuoteUseCase.invoke() ?: return@doOnIo
+                val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
+                setWidgetState(
+                    context = context,
+                    quoteWidgetState = quoteWidgetState,
+                    appWidgetManager = appWidgetManager,
+                    appWidgetId = widgetId
+                )
             }
         }
     }
 
-    private fun setWidgetState(quoteWidgetState: QuoteWidgetState, appWidgetManager: AppWidgetManager, appWidgetId: Int) = with(widgetViewDelegate) {
-        mainScope.launch {
-            setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
-            if (quoteWidgetState is QuoteWidgetState.WidgetState) {
-                setQuote(quoteWidgetState.quote)
-                isAuthorVisible(quoteWidgetState.isAuthorVisible)
-                setQuoteTextSize(quoteWidgetState.quoteTextSize)
-                setQuoteAuthorTextSize(quoteWidgetState.quoteAuthorTextSize)
+    private fun setWidgetState(
+        context: Context,
+        quoteWidgetState: QuoteWidgetState,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ) = doOnMain {
+        widgetViewDelegate.setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
+        if (quoteWidgetState is QuoteWidgetState.WidgetState) setupWidgetView(quoteWidgetState, context)
+        appWidgetManager.updateAppWidget(appWidgetId, widgetViewDelegate.widgetView)
+    }
+
+    private fun setupWidgetView(widgetState: QuoteWidgetState.WidgetState, context: Context) {
+        payloads.forEach {
+            when (it) {
+                WidgetPayload.QUOTE -> widgetViewDelegate.setQuote(widgetState.quote)
+                WidgetPayload.QUOTE_TEXT_SIZE -> widgetViewDelegate.setQuoteTextSize(widgetState.quoteTextSize)
+                WidgetPayload.AUTHOR_VISIBILITY -> widgetViewDelegate.setQuoteTextSize(widgetState.quoteTextSize)
+                WidgetPayload.AUTHOR_TEXT_SIZE -> widgetViewDelegate.isAuthorVisible(widgetState.isAuthorVisible)
+                else -> Unit
             }
-            appWidgetManager.updateAppWidget(appWidgetId, widgetView)
         }
+        val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
+        val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
+        val shouldRestartWorker = (isLanguageChanged || isUpdateTimeChanged) && payloads.contains(WidgetPayload.QUOTE).not()
+        if (shouldRestartWorker) startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
     }
 
     private fun startQuoteLoadingWorker(
         context: Context,
         shouldRestart: Boolean = false
-    ) {
-        ioScope.launch {
-            WorkManager.getInstance(context)
-                .enqueueUniquePeriodicWork(
-                    LOAD_QUOTE_WORKER_NAME,
-                    if (shouldRestart) ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE else ExistingPeriodicWorkPolicy.UPDATE,
-                    QuoteLoadingWorker.createQuoteWidgetWorker(getUpdateTimeUseCase.invoke())
-                )
-        }
+    ) = doOnIo {
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            LOAD_QUOTE_WORKER_NAME,
+            if (shouldRestart) ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE else ExistingPeriodicWorkPolicy.UPDATE,
+            QuoteLoadingWorker.createQuoteWidgetWorker(getUpdateTimeUseCase.invoke())
+        )
     }
 
     override fun onDisabled(context: Context) {
-        ioScope.launch { removeStoredQuoteUseCase.invoke() }
+        doOnIo { removeStoredQuoteUseCase.invoke() }
         WorkManager.getInstance(context).cancelUniqueWork(LOAD_QUOTE_WORKER_NAME)
         super.onDisabled(context)
     }

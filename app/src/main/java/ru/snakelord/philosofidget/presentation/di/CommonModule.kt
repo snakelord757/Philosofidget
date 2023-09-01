@@ -9,7 +9,7 @@ import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdat
 import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdaterImpl
 
 val commonModule = module {
-    factory<StringResolver> { StringResolverImpl(androidApplication().resources) }
+    single<StringResolver> { StringResolverImpl(androidApplication().resources) }
 
     factory { Dispatchers.IO }
 
