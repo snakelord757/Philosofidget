@@ -17,6 +17,7 @@ import ru.snakelord.philosofidget.data.datasource.quote.QuoteDataSource
 import ru.snakelord.philosofidget.data.datasource.quote.QuoteDataSourceImpl
 import ru.snakelord.philosofidget.data.datasource.quote.network.QuoteService
 import ru.snakelord.philosofidget.data.repository.QuoteRepositoryImpl
+import ru.snakelord.philosofidget.domain.interceptor.EscapingCharacterInterceptor
 import ru.snakelord.philosofidget.domain.mapper.QuoteDTOMapper
 import ru.snakelord.philosofidget.domain.repository.QuoteRepository
 import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
@@ -36,12 +37,18 @@ private const val BASE_API_URL = "http://api.forismatic.com/api/"
 private const val QUOTE_WIDGET_SHARED_PREFS = "QUOTE_WIDGET_PREFS"
 
 val widgetModule = module {
+
+    factory { EscapingCharacterInterceptor() }
+
     factory {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BASIC)
 
+        val escapingCharacterInterceptor = inject<EscapingCharacterInterceptor>()
+
         val client: OkHttpClient = OkHttpClient.Builder()
             .addInterceptor(logging)
+            .addInterceptor(escapingCharacterInterceptor.value)
             .connectTimeout(RESPONSE_TIMEOUT, TimeUnit.SECONDS)
             .build()
         val contentType = CONTENT_TYPE.toMediaType()
