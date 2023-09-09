@@ -8,4 +8,8 @@ interface WidgetManager {
     fun updateQuote()
 
     fun hasActiveWidgets(): Boolean
+
+    companion object {
+        const val WIDGET_PAYLOADS_EXTRA = "WIDGET_PAYLOADS_EXTRA"
+    }
 }
