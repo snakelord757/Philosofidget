@@ -15,14 +15,14 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarge
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Toggle.ToggleTarget
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
+import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetManager
 import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetPayload
-import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdater
 import kotlin.math.roundToLong
 
 class WidgetSettingsViewModel(
     private val widgetSettingsInteractor: WidgetSettingsInteractor,
     private val ioDispatcher: CoroutineDispatcher,
-    private val widgetUpdater: WidgetUpdater,
+    private val widgetManager: WidgetManager,
     private val targetWidgetId: Int
 ) : ViewModel() {
 
@@ -38,15 +38,11 @@ class WidgetSettingsViewModel(
 
     private val widgetPayloads = mutableSetOf<WidgetPayload>()
 
-    fun loadQuoteWidgetParams() = viewModelScope.launch(ioDispatcher) {
-        quoteWidgetParamsStateFlow.emit(widgetSettingsInteractor.getQuoteWidgetParams())
-    }
+    fun loadQuoteWidgetParams() = doOnIo { quoteWidgetParamsStateFlow.emit(widgetSettingsInteractor.getQuoteWidgetParams()) }
 
-    fun loadWidgetSettings() = viewModelScope.launch(ioDispatcher) {
-        widgetSettingsStateFlow.emit(widgetSettingsInteractor.getWidgetSettings())
-    }
+    fun loadWidgetSettings() = doOnIo { widgetSettingsStateFlow.emit(widgetSettingsInteractor.getWidgetSettings()) }
 
-    fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) = viewModelScope.launch(ioDispatcher) {
+    fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) = doOnIo {
         when (toggleTarget) {
             ToggleTarget.AUTHOR_VISIBILITY -> {
                 widgetSettingsInteractor.setAuthorVisibility(newValue)
@@ -56,12 +52,12 @@ class WidgetSettingsViewModel(
         loadQuoteWidgetParams()
     }
 
-    fun onLanguageSelected(language: String) = viewModelScope.launch(ioDispatcher) {
+    fun onLanguageSelected(language: String) = doOnIo {
         widgetSettingsInteractor.setQuoteLanguage(language)
         widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
     }
 
-    fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = viewModelScope.launch(ioDispatcher) {
+    fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = doOnIo {
         when (sliderTarget) {
             QUOTE_TEXT_SIZE -> {
                 widgetSettingsInteractor.setQuoteTextSize(newValue)
@@ -85,9 +81,11 @@ class WidgetSettingsViewModel(
         if (targetWidgetId != UNDEFINED_WIDGET_ID) {
             widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
         }
-        widgetUpdater.updateWidget(widgetPayloads)
+        widgetManager.updateWidget(widgetPayloads)
         widgetPayloads.clear()
     }
+
+    private fun doOnIo(block: suspend () -> Unit) = viewModelScope.launch(ioDispatcher) { block.invoke() }
 
     companion object {
         const val UNDEFINED_WIDGET_ID = AppWidgetManager.INVALID_APPWIDGET_ID

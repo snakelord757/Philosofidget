@@ -10,7 +10,10 @@ class QuoteRepositoryImpl(
     private val quoteDataSource: QuoteDataSource
 ) : QuoteRepository {
     override suspend fun getQuote(key: Int, lang: Lang): QuoteDTO = quoteDataSource.getQuote(key, lang.code)
+
     override suspend fun storeQuote(quote: Quote) = quoteDataSource.storeQuote(quote)
+
     override suspend fun getStoredQuote(): Quote? = quoteDataSource.getStoredQuote()
+
     override suspend fun removeStoredQuote() = quoteDataSource.removeStoredQuote()
 }

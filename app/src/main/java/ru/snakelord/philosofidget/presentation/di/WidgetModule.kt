@@ -19,13 +19,18 @@ import ru.snakelord.philosofidget.data.datasource.quote.network.QuoteService
 import ru.snakelord.philosofidget.data.repository.QuoteRepositoryImpl
 import ru.snakelord.philosofidget.domain.interceptor.EscapingCharacterInterceptor
 import ru.snakelord.philosofidget.domain.mapper.QuoteDTOMapper
+import ru.snakelord.philosofidget.domain.model.GetQuoteParams
+import ru.snakelord.philosofidget.domain.model.Quote
 import ru.snakelord.philosofidget.domain.repository.QuoteRepository
+import ru.snakelord.philosofidget.domain.usecase.CoroutineUseCase
+import ru.snakelord.philosofidget.domain.usecase.CoroutineUseCaseWithParams
 import ru.snakelord.philosofidget.domain.usecase.quote.GetKeyUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetQuoteUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetStoredQuoteUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetUpdateTimeUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.RemoveStoredQuoteUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.StoreQuoteUseCase
+import ru.snakelord.philosofidget.presentation.common.UseCases
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegateImpl
@@ -76,17 +81,17 @@ val widgetModule = module {
 
     factory { QuoteWidgetStateMapper() }
 
-    factory { GetQuoteUseCase(get(), get()) }
-
-    factory { GetKeyUseCase() }
-
-    factory { GetStoredQuoteUseCase(get()) }
-
-    factory { StoreQuoteUseCase(get()) }
-
     single<WidgetViewDelegate> { WidgetViewDelegateImpl(RemoteViews(androidApplication().packageName, R.layout.widget_quote)) }
 
-    factory { RemoveStoredQuoteUseCase(get()) }
+    factory<CoroutineUseCaseWithParams<Quote, Unit>>(named(UseCases.STORE_QUOTE)) { StoreQuoteUseCase(get()) }
 
-    factory { GetUpdateTimeUseCase(get()) }
+    factory<CoroutineUseCase<Unit>>(named(UseCases.REMOVE_STORED_QUOTE)) { RemoveStoredQuoteUseCase(get()) }
+
+    factory<CoroutineUseCaseWithParams<GetQuoteParams, Quote>>(named(UseCases.GET_QUOTE)) { GetQuoteUseCase(get(), get()) }
+
+    factory<CoroutineUseCase<Int>>(named(UseCases.GET_KEY)) { GetKeyUseCase() }
+
+    factory<CoroutineUseCase<Quote?>>(named(UseCases.GET_STORED_QUOTE)) { GetStoredQuoteUseCase(get()) }
+
+    factory<CoroutineUseCase<Long>>(named(UseCases.GET_UPDATE_TIME)) { GetUpdateTimeUseCase(get()) }
 }

@@ -6,10 +6,11 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
-import ru.snakelord.philosofidget.domain.usecase.quote.GetStoredQuoteUseCase
-import ru.snakelord.philosofidget.domain.usecase.quote.GetUpdateTimeUseCase
-import ru.snakelord.philosofidget.domain.usecase.quote.RemoveStoredQuoteUseCase
+import ru.snakelord.philosofidget.domain.model.Quote
+import ru.snakelord.philosofidget.domain.usecase.CoroutineUseCase
+import ru.snakelord.philosofidget.presentation.common.UseCases
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
@@ -18,25 +19,29 @@ import ru.snakelord.philosofidget.presentation.widget.worker.QuoteLoadingWorker
 
 class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
 
-    private val getStoreQuoteUseCase by inject<GetStoredQuoteUseCase>()
+    private val getStoreQuoteUseCase by inject<CoroutineUseCase<Quote?>>(named(UseCases.GET_STORED_QUOTE))
     private val widgetSettingsInteractor by inject<WidgetSettingsInteractor>()
     private val quoteWidgetStateMapper by inject<QuoteWidgetStateMapper>()
     private val widgetViewDelegate by inject<WidgetViewDelegate>()
-    private val removeStoredQuoteUseCase by inject<RemoveStoredQuoteUseCase>()
-    private val getUpdateTimeUseCase by inject<GetUpdateTimeUseCase>()
+    private val removeStoredQuoteUseCase by inject<CoroutineUseCase<Unit>>(named(UseCases.REMOVE_STORED_QUOTE))
+    private val getUpdateTimeUseCase by inject<CoroutineUseCase<Long>>(named(UseCases.GET_UPDATE_TIME))
 
     override fun onEnabled(context: Context) = startQuoteLoadingWorker(context)
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) = appWidgetIds.forEach { widgetId ->
         doOnIo {
             setWidgetState(context = context, quoteWidgetState = QuoteWidgetState.Loading)
-            doOnMain { appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView) }
+            updateWidget(appWidgetManager, widgetId)
             val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
             val quote = getStoreQuoteUseCase.invoke() ?: return@doOnIo
             val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
             setWidgetState(context = context, quoteWidgetState = quoteWidgetState)
-            doOnMain { appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView) }
+            updateWidget(appWidgetManager, widgetId)
         }
+    }
+
+    private fun updateWidget(appWidgetManager: AppWidgetManager, widgetId: Int) = doOnMain {
+        appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
     }
 
     private fun setWidgetState(
@@ -48,19 +53,24 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
     }
 
     private fun setupWidgetView(widgetState: QuoteWidgetState.WidgetState, context: Context) {
+        handlePayloads(widgetState)
+        val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
+        val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
+        if ((isLanguageChanged || isUpdateTimeChanged) && payloads.contains(WidgetPayload.QUOTE).not()) {
+            startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
+        }
+    }
+
+    private fun handlePayloads(widgetState: QuoteWidgetState.WidgetState) = with(widgetViewDelegate) {
         payloads.forEach {
             when (it) {
-                WidgetPayload.QUOTE -> widgetViewDelegate.setQuote(widgetState.quote)
-                WidgetPayload.QUOTE_TEXT_SIZE -> widgetViewDelegate.setQuoteTextSize(widgetState.quoteTextSize)
-                WidgetPayload.AUTHOR_VISIBILITY -> widgetViewDelegate.isAuthorVisible(widgetState.isAuthorVisible)
-                WidgetPayload.AUTHOR_TEXT_SIZE -> widgetViewDelegate.setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
+                WidgetPayload.QUOTE -> setQuote(widgetState.quote)
+                WidgetPayload.QUOTE_TEXT_SIZE -> setQuoteTextSize(widgetState.quoteTextSize)
+                WidgetPayload.AUTHOR_VISIBILITY -> isAuthorVisible(widgetState.isAuthorVisible)
+                WidgetPayload.AUTHOR_TEXT_SIZE -> setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
                 else -> Unit
             }
         }
-        val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
-        val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
-        val shouldRestartWorker = (isLanguageChanged || isUpdateTimeChanged) && payloads.contains(WidgetPayload.QUOTE).not()
-        if (shouldRestartWorker) startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
     }
 
     private fun startQuoteLoadingWorker(

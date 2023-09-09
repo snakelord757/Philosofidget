@@ -34,7 +34,7 @@ val widgetSettingsModule = module {
         WidgetSettingsViewModel(
             widgetSettingsInteractor = get(),
             ioDispatcher = get(),
-            widgetUpdater = get(),
+            widgetManager = get(),
             targetWidgetId = targetWidgetId
         )
     }

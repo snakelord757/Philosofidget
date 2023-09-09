@@ -10,8 +10,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetManager
 import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetPayload
-import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetUpdater
 
 abstract class BaseAppWidgetProvider : AppWidgetProvider() {
     private val ioScope = CoroutineScope(Dispatchers.IO)
@@ -45,7 +45,7 @@ abstract class BaseAppWidgetProvider : AppWidgetProvider() {
     }
 
     private fun Intent?.getWidgetPayloads(): Array<WidgetPayload>? = this?.let {
-        IntentCompat.getParcelableArrayExtra(it, WidgetUpdater.WIDGET_PAYLOADS_EXTRA, WidgetPayload::class.java)?.map { payload ->
+        IntentCompat.getParcelableArrayExtra(it, WidgetManager.WIDGET_PAYLOADS_EXTRA, WidgetPayload::class.java)?.map { payload ->
             payload as WidgetPayload
         }?.toTypedArray()
     }
