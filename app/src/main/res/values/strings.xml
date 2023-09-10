@@ -3,6 +3,7 @@
     <string name="widget_preview_quote">Ленивых людей не бывает. Бывают никудышные цели — то есть такие цели, которые не вдохновляют.</string>
     <string name="widget_preview_quote_author">Энтони Роббинс</string>
     <string name="save_widget_configuration_button_text">Сохранить конфигурацию</string>
+    <string name="add_widget_on_home_screen_button_text">Добавить на главный экран</string>
     <string name="widget_settings_author_visibility_title">Отображать автора цитаты (если есть)</string>
     <string name="widget_settings_quote_language">Язык (не влияет на превью виджета)</string>
     <string name="widget_spinner_lang_russian">Русский</string>
@@ -10,4 +11,5 @@
     <string name="widget_settings_quote_text_size">Размер текста цитаты</string>
     <string name="widget_settings_quote_author_text_size">Размер текста автора</string>
     <string name="widget_settings_update_time">Время обновления виджета (в часах)</string>
+    <string name="add_widget_on_home_screen_error">Текущий лаунчер не поддерживает добавление виджета через приложение</string>
 </resources>

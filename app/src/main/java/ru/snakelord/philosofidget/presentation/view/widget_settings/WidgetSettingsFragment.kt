@@ -14,6 +14,7 @@ import ru.snakelord.philosofidget.databinding.FragmentWidgetSettingsBinding
 import ru.snakelord.philosofidget.domain.ext.subscribeOnLifecycle
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
+import ru.snakelord.philosofidget.presentation.model.ActionButtonState
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.adapter.WidgetSettingsAdapter
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.itemdecoration.WidgetSettingsItemDecoration
@@ -48,7 +49,6 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     private fun initUi() = with(binding) {
         settingsRecyclerView.adapter = widgetSettingsAdapter
         settingsRecyclerView.addItemDecoration(WidgetSettingsItemDecoration(resources.getDimensionPixelSize(R.dimen.spacing_20)))
-        saveConfigurationButton.setOnClickListener { widgetSettingsViewModel.requestWidgetUpdate() }
     }
 
     private fun subscribeToViewModel() = with(widgetSettingsViewModel) {
@@ -57,6 +57,12 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         widgetSettings.subscribeOnLifecycle(viewLifecycleOwner, ::setupWidgetSettings)
         quoteWidgetParams.subscribeOnLifecycle(viewLifecycleOwner, ::updateWidgetPreview)
         widgetConfigurationState.subscribeOnLifecycle(viewLifecycleOwner, ::onConfigurationSaved)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        widgetSettingsViewModel.setupButtonState()
+        widgetSettingsViewModel.actionButtonState.subscribeOnLifecycle(viewLifecycleOwner, ::setupActionButton)
     }
 
     private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
@@ -75,6 +81,12 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         val resultCode = if (widgetConfigurationState.isConfigurationSaved) Activity.RESULT_OK else Activity.RESULT_CANCELED
         hostActivity.setResult(resultCode, result)
         if (widgetConfigurationState.isConfigurationSaved) hostActivity.finish()
+    }
+
+    private fun setupActionButton(state: ActionButtonState?) {
+        if (state == null) return
+        binding.actionButton.text = state.title
+        binding.actionButton.setOnClickListener { state.onClickAction.invoke() }
     }
 
     override fun onDestroyView() {

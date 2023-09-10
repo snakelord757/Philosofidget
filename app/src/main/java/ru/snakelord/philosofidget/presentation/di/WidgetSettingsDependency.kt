@@ -35,6 +35,7 @@ val widgetSettingsModule = module {
             widgetSettingsInteractor = get(),
             ioDispatcher = get(),
             widgetManager = get(),
+            stringResolver = get(),
             targetWidgetId = targetWidgetId
         )
     }

@@ -1,4 +1,4 @@
-package ru.snakelord.philosofidget.presentation.widget.widget_updater
+package ru.snakelord.philosofidget.presentation.widget.widget_manager
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
