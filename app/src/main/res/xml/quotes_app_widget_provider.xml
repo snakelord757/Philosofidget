@@ -4,5 +4,6 @@
     android:initialLayout="@layout/widget_quote"
     android:minHeight="220dp"
     android:minWidth="330dp"
+    android:previewImage="@raw/quote_widget_preview"
     android:resizeMode="vertical|horizontal"
     android:widgetCategory="home_screen" />
