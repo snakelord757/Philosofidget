@@ -58,7 +58,8 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
         handlePayloads(widgetState)
         val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
         val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
-        if ((isLanguageChanged || isUpdateTimeChanged) && payloads.contains(WidgetPayload.QUOTE).not()) {
+        val isShouldSetOnlyQuote = payloads.contains(WidgetPayload.QUOTE)
+        if ((isLanguageChanged || isUpdateTimeChanged) && isShouldSetOnlyQuote.not()) {
             startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
         }
     }
