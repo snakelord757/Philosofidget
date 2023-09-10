@@ -48,7 +48,7 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     private fun initUi() = with(binding) {
         settingsRecyclerView.adapter = widgetSettingsAdapter
-        settingsRecyclerView.addItemDecoration(WidgetSettingsItemDecoration(resources.getDimensionPixelSize(R.dimen.spacing_20)))
+        settingsRecyclerView.addItemDecoration(WidgetSettingsItemDecoration(resources.getDimensionPixelSize(R.dimen.spacing_16)))
     }
 
     private fun subscribeToViewModel() = with(widgetSettingsViewModel) {
@@ -57,12 +57,12 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         widgetSettings.subscribeOnLifecycle(viewLifecycleOwner, ::setupWidgetSettings)
         quoteWidgetParams.subscribeOnLifecycle(viewLifecycleOwner, ::updateWidgetPreview)
         widgetConfigurationState.subscribeOnLifecycle(viewLifecycleOwner, ::onConfigurationSaved)
+        actionButtonState.subscribeOnLifecycle(viewLifecycleOwner, ::setupActionButton)
     }
 
     override fun onResume() {
         super.onResume()
         widgetSettingsViewModel.setupButtonState()
-        widgetSettingsViewModel.actionButtonState.subscribeOnLifecycle(viewLifecycleOwner, ::setupActionButton)
     }
 
     private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
