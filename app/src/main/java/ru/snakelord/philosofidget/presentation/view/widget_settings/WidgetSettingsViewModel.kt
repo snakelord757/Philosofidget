@@ -20,7 +20,6 @@ import ru.snakelord.philosofidget.presentation.model.ActionButtonState
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
 import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetManager
 import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetPayload
-import kotlin.math.roundToLong
 
 class WidgetSettingsViewModel(
     private val widgetSettingsInteractor: WidgetSettingsInteractor,
@@ -40,8 +39,8 @@ class WidgetSettingsViewModel(
         MutableStateFlow(WidgetConfigurationState(targetWidgetId = targetWidgetId, isConfigurationSaved = false))
     val widgetConfigurationState = widgetConfigurationStateFlow.asStateFlow()
 
-    private val actionButtonStateSharedFlow: MutableStateFlow<ActionButtonState?> = MutableStateFlow(null)
-    val actionButtonState = actionButtonStateSharedFlow.asStateFlow()
+    private val actionButtonStateFlow: MutableStateFlow<ActionButtonState?> = MutableStateFlow(null)
+    val actionButtonState = actionButtonStateFlow.asStateFlow()
 
     private val widgetPayloads = mutableSetOf<WidgetPayload>()
 
@@ -51,57 +50,69 @@ class WidgetSettingsViewModel(
 
     fun setupButtonState() = viewModelScope.launch {
         val hasActiveWidgets = widgetManager.hasActiveWidgets()
-        val (title: String, onButtonClickAction) = if (hasActiveWidgets) {
-            stringResolver.getString(R.string.save_widget_configuration_button_text) to ::requestWidgetUpdate
+        val (titleResId, onButtonClickAction) = if (hasActiveWidgets) {
+            R.string.save_widget_configuration_button_text to ::requestWidgetUpdate
         } else {
-            stringResolver.getString(R.string.add_widget_on_home_screen_button_text) to ::addWidgetOnHomeScreen
+            R.string.add_widget_on_home_screen_button_text to ::addWidgetOnHomeScreen
         }
-        actionButtonStateSharedFlow.emit(ActionButtonState(title, onButtonClickAction))
+        actionButtonStateFlow.emit(
+            ActionButtonState(
+                title = stringResolver.getString(titleResId),
+                onClickAction = onButtonClickAction,
+                isEnabled = titleResId == R.string.add_widget_on_home_screen_button_text || widgetPayloads.isNotEmpty()
+            )
+        )
     }
 
     fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) = doOnIo {
         when (toggleTarget) {
             ToggleTarget.AUTHOR_VISIBILITY -> {
-                widgetSettingsInteractor.setAuthorVisibility(newValue)
+                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(isAuthorVisible = newValue))
                 widgetPayloads.add(WidgetPayload.AUTHOR_VISIBILITY)
             }
         }
-        loadQuoteWidgetParams()
+        updateButtonEnabledState(isEnabled = true)
     }
 
     fun onLanguageSelected(language: String) = doOnIo {
-        widgetSettingsInteractor.setQuoteLanguage(language)
+        quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteLang = widgetSettingsInteractor.resolveLanguage(language)))
         widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
+        updateButtonEnabledState(isEnabled = true)
     }
 
     fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = doOnIo {
         when (sliderTarget) {
             QUOTE_TEXT_SIZE -> {
-                widgetSettingsInteractor.setQuoteTextSize(newValue)
+                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteTextSize = newValue))
                 widgetPayloads.add(WidgetPayload.QUOTE_TEXT_SIZE)
             }
 
             QUOTE_AUTHOR_TEXT_SIZE -> {
-                widgetSettingsInteractor.setQuoteAuthorTextSize(newValue)
+                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteAuthorTextSize = newValue))
                 widgetPayloads.add(WidgetPayload.AUTHOR_TEXT_SIZE)
             }
 
             QUOTE_UPDATE_TIME -> {
-                widgetSettingsInteractor.setWidgetUpdateTime(newValue.roundToLong())
+                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteUpdateTime = newValue.toLong()))
                 widgetPayloads.add(WidgetPayload.QUOTE_UPDATE_TIME)
             }
         }
-        loadQuoteWidgetParams()
+        updateButtonEnabledState(isEnabled = true)
     }
 
     private fun requestWidgetUpdate() {
-        viewModelScope.launch {
+        doOnIo {
             if (targetWidgetId != UNDEFINED_WIDGET_ID) {
                 widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
             }
+            widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
             widgetManager.updateWidget(widgetPayloads)
-            widgetPayloads.clear()
+            updateButtonEnabledState(isEnabled = false)
         }
+    }
+
+    private suspend fun updateButtonEnabledState(isEnabled: Boolean) {
+        actionButtonStateFlow.emit(actionButtonStateFlow.value?.copy(isEnabled = isEnabled))
     }
 
     private fun addWidgetOnHomeScreen() {

@@ -11,15 +11,30 @@ class WidgetSettingsInteractorImpl(
     private val widgetSettingsRepository: WidgetSettingsRepository,
     private val stringResolver: StringResolver
 ) : WidgetSettingsInteractor {
-    override suspend fun setAuthorVisibility(isAuthorVisible: Boolean) = widgetSettingsRepository.setAuthorVisibility(isAuthorVisible)
 
-    override suspend fun setQuoteLanguage(language: String) = widgetSettingsRepository.setQuoteLanguage(language)
+    private val languagesMap = listOf(
+        stringResolver.getString(R.string.widget_spinner_lang_russian),
+        stringResolver.getString(R.string.widget_spinner_lang_english)
+    )
+        .zip(Lang.values())
+        .toMap()
 
-    override suspend fun setQuoteTextSize(quoteTextSize: Float) = widgetSettingsRepository.setQuoteTextSize(quoteTextSize)
+    override suspend fun setNewWidgetParams(newWidgetParams: QuoteWidgetParams) = with(newWidgetParams) {
+        widgetSettingsRepository.setQuoteTextSize(quoteTextSize)
+        widgetSettingsRepository.setQuoteAuthorTextSize(quoteAuthorTextSize)
+        widgetSettingsRepository.setAuthorVisibility(isAuthorVisible)
+        widgetSettingsRepository.setQuoteLanguage(languagesMap.findKey(newWidgetParams.quoteLang) ?: error("Unsupported lang!"))
+        widgetSettingsRepository.setWidgetUpdateTime(quoteUpdateTime)
+    }
 
-    override suspend fun setQuoteAuthorTextSize(quoteAuthorTextSize: Float) = widgetSettingsRepository.setQuoteAuthorTextSize(quoteAuthorTextSize)
-
-    override suspend fun setWidgetUpdateTime(updateTime: Long) = widgetSettingsRepository.setWidgetUpdateTime(updateTime)
+    private fun Map<String, Lang>.findKey(value: Lang): String? {
+        val iterator = iterator()
+        while (iterator.hasNext()) {
+            val nextItem = iterator.next()
+            if (nextItem.value == value) return nextItem.key
+        }
+        return null
+    }
 
     override suspend fun getWidgetSettings(): Array<WidgetSettings> = widgetSettingsRepository.getWidgetSettings()
 
@@ -32,9 +47,12 @@ class WidgetSettingsInteractorImpl(
             .toMap()
         return QuoteWidgetParams(
             isAuthorVisible = widgetSettingsRepository.getAuthorVisibility(),
-            quoteLang = languagesMap.getOrDefault(widgetSettingsRepository.getQuoteLanguage(), Lang.RU),
+            quoteLang = resolveLanguage(widgetSettingsRepository.getQuoteLanguage()),
             quoteTextSize = widgetSettingsRepository.getQuoteTextSize(),
-            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize()
+            quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize(),
+            quoteUpdateTime = widgetSettingsRepository.getWidgetUpdateTime()
         )
     }
+
+    override fun resolveLanguage(language: String): Lang = languagesMap.getOrDefault(language, Lang.RU)
 }
