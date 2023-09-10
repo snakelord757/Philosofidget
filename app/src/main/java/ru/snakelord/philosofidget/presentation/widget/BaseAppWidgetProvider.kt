@@ -11,7 +11,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetManager
-import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetPayload
+import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetPayload
 
 abstract class BaseAppWidgetProvider : AppWidgetProvider() {
     private val ioScope = CoroutineScope(Dispatchers.IO)

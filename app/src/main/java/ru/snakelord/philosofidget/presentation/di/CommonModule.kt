@@ -13,5 +13,10 @@ val commonModule = module {
 
     factory { Dispatchers.IO }
 
-    single<WidgetManager> { WidgetManagerImpl(androidApplication()) }
+    single<WidgetManager> {
+        WidgetManagerImpl(
+            context = androidApplication(),
+            stringResolver = get()
+        )
+    }
 }

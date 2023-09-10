@@ -14,26 +14,28 @@ import ru.snakelord.philosofidget.presentation.common.UseCases
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
-import ru.snakelord.philosofidget.presentation.widget.widget_updater.WidgetPayload
+import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetPayload
 import ru.snakelord.philosofidget.presentation.widget.worker.QuoteLoadingWorker
 
 class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
 
-    private val getStoreQuoteUseCase by inject<CoroutineUseCase<Quote?>>(named(UseCases.GET_STORED_QUOTE))
+    private val getStoredQuoteUseCase by inject<CoroutineUseCase<Quote?>>(named(UseCases.GET_STORED_QUOTE))
     private val widgetSettingsInteractor by inject<WidgetSettingsInteractor>()
     private val quoteWidgetStateMapper by inject<QuoteWidgetStateMapper>()
     private val widgetViewDelegate by inject<WidgetViewDelegate>()
     private val removeStoredQuoteUseCase by inject<CoroutineUseCase<Unit>>(named(UseCases.REMOVE_STORED_QUOTE))
     private val getUpdateTimeUseCase by inject<CoroutineUseCase<Long>>(named(UseCases.GET_UPDATE_TIME))
 
-    override fun onEnabled(context: Context) = startQuoteLoadingWorker(context)
+    override fun onEnabled(context: Context) = doOnIo {
+        if (getStoredQuote() == null) startQuoteLoadingWorker(context)
+    }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) = appWidgetIds.forEach { widgetId ->
         doOnIo {
             setWidgetState(context = context, quoteWidgetState = QuoteWidgetState.Loading)
             updateWidget(appWidgetManager, widgetId)
             val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
-            val quote = getStoreQuoteUseCase.invoke() ?: return@doOnIo
+            val quote = getStoredQuote() ?: return@doOnIo
             val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
             setWidgetState(context = context, quoteWidgetState = quoteWidgetState)
             updateWidget(appWidgetManager, widgetId)
@@ -89,6 +91,8 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
         WorkManager.getInstance(context).cancelUniqueWork(LOAD_QUOTE_WORKER_NAME)
         super.onDisabled(context)
     }
+
+    private suspend fun getStoredQuote() = getStoredQuoteUseCase.invoke()
 
     private companion object {
         const val LOAD_QUOTE_WORKER_NAME = "LOAD_QUOTE_WORKER_NAME"
