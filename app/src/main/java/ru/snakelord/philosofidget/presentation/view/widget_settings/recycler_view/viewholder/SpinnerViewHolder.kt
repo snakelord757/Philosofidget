@@ -16,7 +16,7 @@ class SpinnerViewHolder(
         val variantsAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, item.variants)
         variantsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinner.adapter = variantsAdapter
-        binding.spinner.setSelection(variantsAdapter.getPosition(item.currentVariant))
+        binding.spinner.setSelection(variantsAdapter.getPosition(item.currentVariant), false)
         binding.spinner.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 variantsAdapter.getItem(position)?.let(languageSpinnerCallback)
