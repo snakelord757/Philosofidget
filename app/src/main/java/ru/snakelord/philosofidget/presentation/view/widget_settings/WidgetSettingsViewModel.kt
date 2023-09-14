@@ -55,11 +55,12 @@ class WidgetSettingsViewModel(
         } else {
             R.string.add_widget_on_home_screen_button_text to ::addWidgetOnHomeScreen
         }
+        val isButtonEnabled = (titleResId == R.string.add_widget_on_home_screen_button_text || widgetPayloads.isNotEmpty() || isInConfigurationMode())
         actionButtonStateFlow.emit(
             ActionButtonState(
                 title = stringResolver.getString(titleResId),
                 onClickAction = onButtonClickAction,
-                isEnabled = titleResId == R.string.add_widget_on_home_screen_button_text || widgetPayloads.isNotEmpty()
+                isEnabled = isButtonEnabled
             )
         )
     }
@@ -102,7 +103,7 @@ class WidgetSettingsViewModel(
 
     private fun requestWidgetUpdate() {
         doOnIo {
-            if (targetWidgetId != UNDEFINED_WIDGET_ID) {
+            if (isInConfigurationMode()) {
                 widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
             }
             widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
@@ -120,6 +121,8 @@ class WidgetSettingsViewModel(
     }
 
     private fun doOnIo(block: suspend () -> Unit) = viewModelScope.launch(ioDispatcher) { block.invoke() }
+
+    private fun isInConfigurationMode() = (targetWidgetId != UNDEFINED_WIDGET_ID)
 
     companion object {
         const val UNDEFINED_WIDGET_ID = AppWidgetManager.INVALID_APPWIDGET_ID

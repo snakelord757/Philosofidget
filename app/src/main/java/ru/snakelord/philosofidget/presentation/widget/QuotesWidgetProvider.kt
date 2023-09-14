@@ -33,17 +33,13 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) = appWidgetIds.forEach { widgetId ->
         doOnIo {
             setWidgetState(context = context, quoteWidgetState = QuoteWidgetState.Loading)
-            updateWidget(appWidgetManager, widgetId)
+            appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
             val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
             val quote = getStoredQuote() ?: return@doOnIo
             val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
             setWidgetState(context = context, quoteWidgetState = quoteWidgetState)
-            updateWidget(appWidgetManager, widgetId)
+            appWidgetManager.partiallyUpdateAppWidget(widgetId, widgetViewDelegate.widgetView)
         }
-    }
-
-    private fun updateWidget(appWidgetManager: AppWidgetManager, widgetId: Int) = doOnMain {
-        appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
     }
 
     private fun setWidgetState(
@@ -59,9 +55,8 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
         val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
         val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
         val isShouldSetOnlyQuote = payloads.contains(WidgetPayload.QUOTE)
-        if ((isLanguageChanged || isUpdateTimeChanged) && isShouldSetOnlyQuote.not()) {
-            startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
-        }
+        val needFullUpdate = ((isLanguageChanged || isUpdateTimeChanged) && isShouldSetOnlyQuote.not())
+        if (needFullUpdate) startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
     }
 
     private fun handlePayloads(widgetState: QuoteWidgetState.WidgetState) = with(widgetViewDelegate) {

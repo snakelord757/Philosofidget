@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -26,10 +27,7 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         get() = viewBinding ?: error("ViewBinding isn't initialized!")
 
     private val widgetSettingsViewModel by viewModel<WidgetSettingsViewModel> {
-        parametersOf(
-            requireActivity().intent.extras?.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, WidgetSettingsViewModel.UNDEFINED_WIDGET_ID)
-                ?: WidgetSettingsViewModel.UNDEFINED_WIDGET_ID
-        )
+        parametersOf(arguments?.getInt(BUNDLE_WIDGET_ID_KEY, UNDEFINED_WIDGET_ID) ?: UNDEFINED_WIDGET_ID)
     }
 
     private val widgetSettingsAdapter by lazy(LazyThreadSafetyMode.NONE) {
@@ -95,7 +93,11 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     companion object {
+        private const val BUNDLE_WIDGET_ID_KEY = "BUNDLE_WIDGET_ID_KEY"
+        const val UNDEFINED_WIDGET_ID = WidgetSettingsViewModel.UNDEFINED_WIDGET_ID
         const val TAG = "WidgetSettingsFragment"
-        fun newInstance() = WidgetSettingsFragment()
+        fun newInstance(widgetId: Int) = WidgetSettingsFragment().apply {
+            arguments = bundleOf(BUNDLE_WIDGET_ID_KEY to widgetId)
+        }
     }
 }
