@@ -1,5 +1,6 @@
 package ru.snakelord.philosofidget.presentation.view.main
 
+import android.appwidget.AppWidgetManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
@@ -11,8 +12,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (savedInstanceState == null) {
+            val configurableWidgetId = intent?.extras?.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, WidgetSettingsFragment.UNDEFINED_WIDGET_ID)
             supportFragmentManager.commit {
-                replace(R.id.fragment_container_view, WidgetSettingsFragment.newInstance(), WidgetSettingsFragment.TAG)
+                add(
+                    R.id.fragment_container_view,
+                    WidgetSettingsFragment.newInstance(configurableWidgetId ?: WidgetSettingsFragment.UNDEFINED_WIDGET_ID),
+                    WidgetSettingsFragment.TAG
+                )
             }
         }
     }

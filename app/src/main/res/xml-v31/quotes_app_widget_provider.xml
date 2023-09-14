@@ -7,4 +7,5 @@
     android:previewImage="@raw/quote_widget_preview"
     android:previewLayout="@layout/widget_quote_preview"
     android:resizeMode="vertical|horizontal"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />
