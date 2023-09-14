@@ -6,7 +6,7 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings
 class ToggleViewHolder(
     private val binding: WidgetSettingsToggleBinding,
     private val toggleCallback: (Boolean, WidgetSettings.Toggle.ToggleTarget) -> Unit
-) : WidgetSettingsBaseViewHolder<WidgetSettings.Toggle>(binding) {
+) : WidgetSettingsBaseViewHolder<WidgetSettings.Toggle>(binding.root) {
     override fun bind(item: WidgetSettings.Toggle) {
         binding.toggleTitle.text = item.title
         binding.toggleSwitch.isChecked = item.currentValue

@@ -22,7 +22,6 @@ sealed class WidgetSettings {
         val currentValue: Float,
         val minValue: Float,
         val maxValue: Float,
-        val formatToInt: Boolean = false,
         val sliderTarget: SliderTarget
     ) : WidgetSettings() {
         enum class SliderTarget {

@@ -26,6 +26,7 @@ class WidgetManagerImpl(private val context: Context, private val stringResolver
     }
 
     override fun updateQuote() = updateWidget(setOf(WidgetPayload.QUOTE))
+
     override fun addWidgetOnHomeScreen() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         if (appWidgetManager.isRequestPinAppWidgetSupported) {
