@@ -64,7 +64,6 @@ class WidgetSettingsRepositoryImpl(
                 currentValue = widgetSettingsDataSource.getWidgetUpdateTime().toFloat(),
                 minValue = QUOTE_UPDATE_TIME_MIN_HOUR,
                 maxValue = QUOTE_UPDATE_TIME_MAX_HOUR,
-                formatToInt = true,
                 sliderTarget = WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
             )
         )

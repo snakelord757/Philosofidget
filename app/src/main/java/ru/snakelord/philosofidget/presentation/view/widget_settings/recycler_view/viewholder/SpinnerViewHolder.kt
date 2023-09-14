@@ -10,10 +10,10 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings
 class SpinnerViewHolder(
     private val binding: WidgetSettingsSpinnerBinding,
     private val languageSpinnerCallback: (String) -> Unit
-) : WidgetSettingsBaseViewHolder<WidgetSettings.Spinner>(binding) {
+) : WidgetSettingsBaseViewHolder<WidgetSettings.Spinner>(binding.root) {
     override fun bind(item: WidgetSettings.Spinner) {
         binding.spinnerTitle.text = item.title
-        val variantsAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, item.variants)
+        val variantsAdapter = ArrayAdapter(itemView.context, android.R.layout.simple_spinner_item, item.variants)
         variantsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinner.adapter = variantsAdapter
         binding.spinner.setSelection(variantsAdapter.getPosition(item.currentVariant), false)

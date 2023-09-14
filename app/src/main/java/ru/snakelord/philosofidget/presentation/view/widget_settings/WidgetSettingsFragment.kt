@@ -83,11 +83,10 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         if (widgetConfigurationState.isConfigurationSaved) hostActivity.finish()
     }
 
-    private fun setupActionButton(state: ActionButtonState?) {
-        if (state == null) return
-        binding.actionButton.text = state.title
-        binding.actionButton.setOnClickListener { state.onClickAction.invoke() }
-        binding.actionButton.isEnabled = state.isEnabled
+    private fun setupActionButton(state: ActionButtonState?) = state?.let {
+        binding.actionButton.text = it.title
+        binding.actionButton.setOnClickListener { _ -> it.onClickAction.invoke() }
+        binding.actionButton.isEnabled = it.isEnabled
     }
 
     override fun onDestroyView() {

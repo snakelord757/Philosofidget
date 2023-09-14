@@ -9,7 +9,7 @@ import ru.snakelord.philosofidget.domain.string_resolver.StringResolver
 
 class WidgetSettingsInteractorImpl(
     private val widgetSettingsRepository: WidgetSettingsRepository,
-    private val stringResolver: StringResolver
+    stringResolver: StringResolver
 ) : WidgetSettingsInteractor {
 
     private val languagesMap = listOf(
@@ -23,28 +23,13 @@ class WidgetSettingsInteractorImpl(
         widgetSettingsRepository.setQuoteTextSize(quoteTextSize)
         widgetSettingsRepository.setQuoteAuthorTextSize(quoteAuthorTextSize)
         widgetSettingsRepository.setAuthorVisibility(isAuthorVisible)
-        widgetSettingsRepository.setQuoteLanguage(languagesMap.findKey(newWidgetParams.quoteLang) ?: error("Unsupported lang!"))
+        widgetSettingsRepository.setQuoteLanguage(resolveLanguage(newWidgetParams.quoteLang))
         widgetSettingsRepository.setWidgetUpdateTime(quoteUpdateTime)
-    }
-
-    private fun Map<String, Lang>.findKey(value: Lang): String? {
-        val iterator = iterator()
-        while (iterator.hasNext()) {
-            val nextItem = iterator.next()
-            if (nextItem.value == value) return nextItem.key
-        }
-        return null
     }
 
     override suspend fun getWidgetSettings(): Array<WidgetSettings> = widgetSettingsRepository.getWidgetSettings()
 
     override suspend fun getQuoteWidgetParams(): QuoteWidgetParams {
-        val languagesMap = listOf(
-            stringResolver.getString(R.string.widget_spinner_lang_russian),
-            stringResolver.getString(R.string.widget_spinner_lang_english)
-        )
-            .zip(Lang.values())
-            .toMap()
         return QuoteWidgetParams(
             isAuthorVisible = widgetSettingsRepository.getAuthorVisibility(),
             quoteLang = resolveLanguage(widgetSettingsRepository.getQuoteLanguage()),
@@ -55,4 +40,11 @@ class WidgetSettingsInteractorImpl(
     }
 
     override fun resolveLanguage(language: String): Lang = languagesMap.getOrDefault(language, Lang.RU)
+
+    private fun resolveLanguage(selectedLang: Lang): String {
+        languagesMap.forEach { (key, value) ->
+            if (value == selectedLang) return key
+        }
+        error("Unable to find $selectedLang")
+    }
 }
