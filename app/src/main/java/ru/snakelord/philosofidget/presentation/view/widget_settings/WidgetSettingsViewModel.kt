@@ -55,7 +55,7 @@ class WidgetSettingsViewModel(
         } else {
             R.string.add_widget_on_home_screen_button_text to ::addWidgetOnHomeScreen
         }
-        val isButtonEnabled = (titleResId == R.string.add_widget_on_home_screen_button_text || widgetPayloads.isNotEmpty() || isInConfigurationMode())
+        val isButtonEnabled = (hasActiveWidgets.not() || widgetPayloads.isNotEmpty() || isInConfigurationMode())
         actionButtonStateFlow.emit(
             ActionButtonState(
                 title = stringResolver.getString(titleResId),
@@ -82,34 +82,35 @@ class WidgetSettingsViewModel(
     }
 
     fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = doOnIo {
-        when (sliderTarget) {
-            QUOTE_TEXT_SIZE -> {
-                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteTextSize = newValue))
-                widgetPayloads.add(WidgetPayload.QUOTE_TEXT_SIZE)
-            }
+        val updatedParams = with(quoteWidgetParamsStateFlow.value) {
+            when (sliderTarget) {
+                QUOTE_TEXT_SIZE -> {
+                    widgetPayloads.add(WidgetPayload.QUOTE_TEXT_SIZE)
+                    copy(quoteTextSize = newValue)
+                }
 
-            QUOTE_AUTHOR_TEXT_SIZE -> {
-                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteAuthorTextSize = newValue))
-                widgetPayloads.add(WidgetPayload.AUTHOR_TEXT_SIZE)
-            }
+                QUOTE_AUTHOR_TEXT_SIZE -> {
+                    widgetPayloads.add(WidgetPayload.AUTHOR_TEXT_SIZE)
+                    copy(quoteAuthorTextSize = newValue)
+                }
 
-            QUOTE_UPDATE_TIME -> {
-                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteUpdateTime = newValue.toLong()))
-                widgetPayloads.add(WidgetPayload.QUOTE_UPDATE_TIME)
+                QUOTE_UPDATE_TIME -> {
+                    widgetPayloads.add(WidgetPayload.QUOTE_UPDATE_TIME)
+                    copy(quoteUpdateTime = newValue.toLong())
+                }
             }
         }
+        quoteWidgetParamsStateFlow.emit(updatedParams)
         updateButtonEnabledState(isEnabled = true)
     }
 
-    private fun requestWidgetUpdate() {
-        doOnIo {
-            if (isInConfigurationMode()) {
-                widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
-            }
-            widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
-            widgetManager.updateWidget(widgetPayloads)
-            updateButtonEnabledState(isEnabled = false)
+    private fun requestWidgetUpdate() = doOnIo {
+        if (isInConfigurationMode()) {
+            widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
         }
+        widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
+        widgetManager.updateWidget(widgetPayloads)
+        updateButtonEnabledState(isEnabled = false)
     }
 
     private suspend fun updateButtonEnabledState(isEnabled: Boolean) {
@@ -120,7 +121,9 @@ class WidgetSettingsViewModel(
         viewModelScope.launch { widgetManager.addWidgetOnHomeScreen() }
     }
 
-    private fun doOnIo(block: suspend () -> Unit) = viewModelScope.launch(ioDispatcher) { block.invoke() }
+    private fun doOnIo(block: suspend () -> Unit) {
+        viewModelScope.launch(ioDispatcher) { block.invoke() }
+    }
 
     private fun isInConfigurationMode() = (targetWidgetId != UNDEFINED_WIDGET_ID)
 
