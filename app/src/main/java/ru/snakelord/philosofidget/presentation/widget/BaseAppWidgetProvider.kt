@@ -29,6 +29,12 @@ abstract class BaseAppWidgetProvider : AppWidgetProvider() {
         super.onReceive(context, intent)
     }
 
+    private fun Intent?.getWidgetPayloads(): Array<WidgetPayload>? = this?.let {
+        IntentCompat.getParcelableArrayExtra(it, WidgetManager.WIDGET_PAYLOADS_EXTRA, WidgetPayload::class.java)?.map { payload ->
+            payload as WidgetPayload
+        }?.toTypedArray()
+    }
+
     @CallSuper
     override fun onDisabled(context: Context) {
         ioScope.cancel(CANCEL_MESSAGE)
@@ -44,11 +50,7 @@ abstract class BaseAppWidgetProvider : AppWidgetProvider() {
         mainScope.launch { block.invoke() }
     }
 
-    private fun Intent?.getWidgetPayloads(): Array<WidgetPayload>? = this?.let {
-        IntentCompat.getParcelableArrayExtra(it, WidgetManager.WIDGET_PAYLOADS_EXTRA, WidgetPayload::class.java)?.map { payload ->
-            payload as WidgetPayload
-        }?.toTypedArray()
-    }
+    protected fun needFullWidgetUpdate() = _payloads.contains(WidgetPayload.QUOTE)
 
     private companion object {
         const val CANCEL_MESSAGE = "Job canceled 'cause widget removed"

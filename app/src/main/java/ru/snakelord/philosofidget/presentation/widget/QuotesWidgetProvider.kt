@@ -12,7 +12,7 @@ import ru.snakelord.philosofidget.domain.model.Quote
 import ru.snakelord.philosofidget.domain.usecase.CoroutineUseCase
 import ru.snakelord.philosofidget.presentation.common.UseCases
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
-import ru.snakelord.philosofidget.presentation.model.QuoteWidgetState
+import ru.snakelord.philosofidget.presentation.model.WidgetState
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
 import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetPayload
 import ru.snakelord.philosofidget.presentation.widget.worker.QuoteLoadingWorker
@@ -32,25 +32,24 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) = appWidgetIds.forEach { widgetId ->
         doOnIo {
-            setWidgetState(context = context, quoteWidgetState = QuoteWidgetState.Loading)
-            appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
             val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
             val quote = getStoredQuote() ?: return@doOnIo
             val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
             setWidgetState(context = context, quoteWidgetState = quoteWidgetState)
-            appWidgetManager.partiallyUpdateAppWidget(widgetId, widgetViewDelegate.widgetView)
+            if (needFullWidgetUpdate()) {
+                appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
+            } else {
+                appWidgetManager.partiallyUpdateAppWidget(widgetId, widgetViewDelegate.widgetView)
+            }
         }
     }
 
-    private fun setWidgetState(
-        context: Context,
-        quoteWidgetState: QuoteWidgetState,
-    ) = doOnMain {
-        widgetViewDelegate.setProgressVisibility(quoteWidgetState is QuoteWidgetState.Loading)
-        if (quoteWidgetState is QuoteWidgetState.WidgetState) setupWidgetView(quoteWidgetState, context)
+    private fun setWidgetState(context: Context, quoteWidgetState: WidgetState) = doOnMain {
+        widgetViewDelegate.setProgressVisibility(isProgressVisible = false)
+        setupWidgetView(quoteWidgetState, context)
     }
 
-    private fun setupWidgetView(widgetState: QuoteWidgetState.WidgetState, context: Context) {
+    private fun setupWidgetView(widgetState: WidgetState, context: Context) {
         handlePayloads(widgetState)
         val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
         val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
@@ -59,7 +58,7 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
         if (needFullUpdate) startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
     }
 
-    private fun handlePayloads(widgetState: QuoteWidgetState.WidgetState) = with(widgetViewDelegate) {
+    private fun handlePayloads(widgetState: WidgetState) = with(widgetViewDelegate) {
         payloads.forEach {
             when (it) {
                 WidgetPayload.QUOTE -> setQuote(widgetState.quote)
