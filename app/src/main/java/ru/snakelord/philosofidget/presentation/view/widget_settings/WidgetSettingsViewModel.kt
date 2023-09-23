@@ -14,6 +14,9 @@ import ru.snakelord.philosofidget.domain.model.WidgetSettings
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_AUTHOR_TEXT_SIZE
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_TEXT_SIZE
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.Spinner.SpinnerTarget.LANGUAGE
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.Spinner.SpinnerTarget.QUOTE_AUTHOR_GRAVITY
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.Spinner.SpinnerTarget.QUOTE_TEXT_GRAVITY
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Toggle.ToggleTarget
 import ru.snakelord.philosofidget.domain.string_resolver.StringResolver
 import ru.snakelord.philosofidget.presentation.model.ActionButtonState
@@ -65,7 +68,7 @@ class WidgetSettingsViewModel(
         )
     }
 
-    fun onToggleUpdated(newValue: Boolean, toggleTarget: ToggleTarget) = doOnIo {
+    fun onToggleValueChanged(newValue: Boolean, toggleTarget: ToggleTarget) = doOnIo {
         when (toggleTarget) {
             ToggleTarget.AUTHOR_VISIBILITY -> {
                 quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(isAuthorVisible = newValue))
@@ -75,9 +78,26 @@ class WidgetSettingsViewModel(
         updateButtonEnabledState(isEnabled = true)
     }
 
-    fun onLanguageSelected(language: String) = doOnIo {
-        quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(quoteLang = widgetSettingsInteractor.resolveLanguage(language)))
-        widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
+    fun onSpinnerValueChanged(newValue: String, spinnerTarget: WidgetSettings.Spinner.SpinnerTarget) = doOnIo {
+        val updatedParams = with(quoteWidgetParamsStateFlow.value) {
+            when (spinnerTarget) {
+                LANGUAGE -> {
+                    widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
+                    copy(quoteLang = widgetSettingsInteractor.resolveLanguage(newValue))
+                }
+
+                QUOTE_TEXT_GRAVITY -> {
+                    widgetPayloads.add(WidgetPayload.QUOTE_TEXT_GRAVITY)
+                    copy(quoteTextGravity = widgetSettingsInteractor.resolveGravity(newValue))
+                }
+
+                QUOTE_AUTHOR_GRAVITY -> {
+                    widgetPayloads.add(WidgetPayload.QUOTE_AUTHOR_TEXT_GRAVITY)
+                    copy(quoteAuthorTextGravity = widgetSettingsInteractor.resolveGravity(newValue))
+                }
+            }
+        }
+        quoteWidgetParamsStateFlow.emit(updatedParams)
         updateButtonEnabledState(isEnabled = true)
     }
 
@@ -105,12 +125,12 @@ class WidgetSettingsViewModel(
     }
 
     private fun requestWidgetUpdate() = doOnIo {
-        if (isInConfigurationMode()) {
-            widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
-        }
+        val isInConfigurationMode = isInConfigurationMode()
+        if (isInConfigurationMode || !widgetManager.hasActiveWidgets()) widgetPayloads.add(WidgetPayload.QUOTE)
         widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
-        widgetManager.updateWidget(widgetPayloads)
         updateButtonEnabledState(isEnabled = false)
+        widgetManager.updateWidget(widgetPayloads)
+        if (isInConfigurationMode) widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
     }
 
     private suspend fun updateButtonEnabledState(isEnabled: Boolean) {

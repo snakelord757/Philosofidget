@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widgetRoot"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widgetRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -14,21 +14,64 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/quote"
+            android:id="@+id/quote_start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="start"
             android:textColor="@color/white"
             android:textSize="30sp"
             tools:text="Ленивых людей не бывает. Бывают никудышные цели — то есть такие цели, которые не вдохновляют. " />
 
         <TextView
-            android:id="@+id/author"
-            android:layout_width="wrap_content"
+            android:id="@+id/quote_end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textColor="@color/white"
+            android:textSize="30sp"
+            android:visibility="gone"
+            tools:text="Ленивых людей не бывает. Бывают никудышные цели — то есть такие цели, которые не вдохновляют. " />
+
+        <TextView
+            android:id="@+id/quote_center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="30sp"
+            android:visibility="gone"
+            tools:text="Ленивых людей не бывает. Бывают никудышные цели — то есть такие цели, которые не вдохновляют. " />
+
+        <TextView
+            android:id="@+id/author_start"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_gravity="end"
+            android:gravity="start"
             android:textColor="@color/white"
             android:textSize="15sp"
+            android:visibility="gone"
+            tools:text="Энтони Роббинс" />
+
+        <TextView
+            android:id="@+id/author_end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="end"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            tools:text="Энтони Роббинс" />
+
+        <TextView
+            android:id="@+id/author_center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:visibility="gone"
             tools:text="Энтони Роббинс" />
 
     </LinearLayout>

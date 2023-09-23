@@ -5,5 +5,7 @@ data class QuoteWidgetParams(
     val quoteLang: Lang = Lang.RU,
     val quoteTextSize: Float = 0F,
     val quoteAuthorTextSize: Float = 0F,
-    val quoteUpdateTime: Long = 0L
+    val quoteUpdateTime: Long = 0L,
+    val quoteTextGravity: TextGravity = TextGravity.START,
+    val quoteAuthorTextGravity: TextGravity = TextGravity.END
 )

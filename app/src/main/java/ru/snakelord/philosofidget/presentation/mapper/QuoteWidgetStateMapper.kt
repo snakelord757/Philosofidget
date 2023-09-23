@@ -10,6 +10,8 @@ class QuoteWidgetStateMapper {
             quote = quote,
             isAuthorVisible = widgetParams.isAuthorVisible,
             quoteTextSize = widgetParams.quoteTextSize,
-            quoteAuthorTextSize = widgetParams.quoteAuthorTextSize
+            quoteAuthorTextSize = widgetParams.quoteAuthorTextSize,
+            quoteTextGravity = widgetParams.quoteTextGravity,
+            quoteAuthorTextGravity = widgetParams.quoteAuthorTextGravity
         )
 }

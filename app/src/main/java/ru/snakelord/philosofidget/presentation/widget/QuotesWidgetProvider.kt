@@ -25,6 +25,7 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
     private val widgetViewDelegate by inject<WidgetViewDelegate>()
     private val removeStoredQuoteUseCase by inject<CoroutineUseCase<Unit>>(named(UseCases.REMOVE_STORED_QUOTE))
     private val getUpdateTimeUseCase by inject<CoroutineUseCase<Long>>(named(UseCases.GET_UPDATE_TIME))
+    private val removeQuoteParamsUseCase by inject<CoroutineUseCase<Unit>>(named(UseCases.REMOVE_WIDGET_PARAMS))
 
     override fun onEnabled(context: Context) = doOnIo {
         if (getStoredQuote() == null) startQuoteLoadingWorker(context)
@@ -35,21 +36,18 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
             val quoteWidgetParams = widgetSettingsInteractor.getQuoteWidgetParams()
             val quote = getStoredQuote() ?: return@doOnIo
             val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
-            setWidgetState(context = context, quoteWidgetState = quoteWidgetState)
-            if (needFullWidgetUpdate()) {
-                appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
-            } else {
-                appWidgetManager.partiallyUpdateAppWidget(widgetId, widgetViewDelegate.widgetView)
+            doOnMain {
+                setupWidgetView(context, quoteWidgetState)
+                if (needFullUpdate()) {
+                    appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
+                } else {
+                    appWidgetManager.partiallyUpdateAppWidget(widgetId, widgetViewDelegate.widgetView)
+                }
             }
         }
     }
 
-    private fun setWidgetState(context: Context, quoteWidgetState: WidgetState) = doOnMain {
-        widgetViewDelegate.setProgressVisibility(isProgressVisible = false)
-        setupWidgetView(quoteWidgetState, context)
-    }
-
-    private fun setupWidgetView(widgetState: WidgetState, context: Context) {
+    private fun setupWidgetView(context: Context, widgetState: WidgetState) {
         handlePayloads(widgetState)
         val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
         val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
@@ -65,6 +63,8 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
                 WidgetPayload.QUOTE_TEXT_SIZE -> setQuoteTextSize(widgetState.quoteTextSize)
                 WidgetPayload.AUTHOR_VISIBILITY -> isAuthorVisible(widgetState.isAuthorVisible)
                 WidgetPayload.AUTHOR_TEXT_SIZE -> setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
+                WidgetPayload.QUOTE_TEXT_GRAVITY -> setQuoteTextGravity(widgetState.quoteTextGravity)
+                WidgetPayload.QUOTE_AUTHOR_TEXT_GRAVITY -> setQuoteAuthorTextGravity(widgetState.quoteAuthorTextGravity)
                 else -> Unit
             }
         }
@@ -82,7 +82,10 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
     }
 
     override fun onDisabled(context: Context) {
-        doOnIo { removeStoredQuoteUseCase.invoke() }
+        doOnIo {
+            removeStoredQuoteUseCase.invoke()
+            removeQuoteParamsUseCase.invoke()
+        }
         WorkManager.getInstance(context).cancelUniqueWork(LOAD_QUOTE_WORKER_NAME)
         super.onDisabled(context)
     }

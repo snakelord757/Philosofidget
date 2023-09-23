@@ -2,13 +2,11 @@ package ru.snakelord.philosofidget.presentation.widget.view_delegate
 
 import android.widget.RemoteViews
 import androidx.annotation.ColorInt
-import ru.snakelord.philosofidget.domain.model.Lang
 import ru.snakelord.philosofidget.domain.model.Quote
+import ru.snakelord.philosofidget.domain.model.TextGravity
 
 interface WidgetViewDelegate {
     val widgetView: RemoteViews
-
-    fun setProgressVisibility(isProgressVisible: Boolean)
 
     fun setQuote(quote: Quote)
 
@@ -21,4 +19,8 @@ interface WidgetViewDelegate {
     fun setQuoteAuthorTextColor(@ColorInt color: Int)
 
     fun isAuthorVisible(isAuthorVisible: Boolean)
+
+    fun setQuoteTextGravity(textGravity: TextGravity)
+
+    fun setQuoteAuthorTextGravity(textGravity: TextGravity)
 }

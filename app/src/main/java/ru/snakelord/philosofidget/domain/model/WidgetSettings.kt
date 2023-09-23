@@ -14,8 +14,15 @@ sealed class WidgetSettings {
     data class Spinner(
         val title: String,
         val currentVariant: String,
-        val variants: List<String>
-    ) : WidgetSettings()
+        val variants: List<String>,
+        val spinnerTarget: SpinnerTarget
+    ) : WidgetSettings() {
+        enum class SpinnerTarget {
+            LANGUAGE,
+            QUOTE_TEXT_GRAVITY,
+            QUOTE_AUTHOR_GRAVITY
+        }
+    }
 
     data class Slider(
         val title: String,
