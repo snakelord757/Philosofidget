@@ -50,7 +50,7 @@ abstract class BaseAppWidgetProvider : AppWidgetProvider() {
         mainScope.launch { block.invoke() }
     }
 
-    protected fun needFullWidgetUpdate() = _payloads.contains(WidgetPayload.QUOTE)
+    protected fun needFullUpdate() = _payloads.contains(WidgetPayload.QUOTE)
 
     private companion object {
         const val CANCEL_MESSAGE = "Job canceled 'cause widget removed"

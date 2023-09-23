@@ -30,6 +30,7 @@ import ru.snakelord.philosofidget.domain.usecase.quote.GetStoredQuoteUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.GetUpdateTimeUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.RemoveStoredQuoteUseCase
 import ru.snakelord.philosofidget.domain.usecase.quote.StoreQuoteUseCase
+import ru.snakelord.philosofidget.domain.usecase.widget_settings.RemoveQuoteParamsUseCase
 import ru.snakelord.philosofidget.presentation.common.UseCases
 import ru.snakelord.philosofidget.presentation.mapper.QuoteWidgetStateMapper
 import ru.snakelord.philosofidget.presentation.widget.view_delegate.WidgetViewDelegate
@@ -81,7 +82,7 @@ val widgetModule = module {
 
     factory { QuoteWidgetStateMapper() }
 
-    single<WidgetViewDelegate> { WidgetViewDelegateImpl(RemoteViews(androidApplication().packageName, R.layout.widget_quote)) }
+    factory<WidgetViewDelegate> { WidgetViewDelegateImpl(RemoteViews(androidApplication().packageName, R.layout.widget_quote)) }
 
     factory<CoroutineUseCaseWithParams<Quote, Unit>>(named(UseCases.STORE_QUOTE)) { StoreQuoteUseCase(get()) }
 
@@ -94,4 +95,6 @@ val widgetModule = module {
     factory<CoroutineUseCase<Quote?>>(named(UseCases.GET_STORED_QUOTE)) { GetStoredQuoteUseCase(get()) }
 
     factory<CoroutineUseCase<Long>>(named(UseCases.GET_UPDATE_TIME)) { GetUpdateTimeUseCase(get()) }
+
+    factory<CoroutineUseCase<Unit>>(named(UseCases.REMOVE_WIDGET_PARAMS)) { RemoveQuoteParamsUseCase(get()) }
 }

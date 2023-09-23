@@ -14,7 +14,7 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vie
 
 class WidgetSettingsAdapter(
     private val toggleCallback: (Boolean, WidgetSettings.Toggle.ToggleTarget) -> Unit,
-    private val languageSpinnerCallback: (String) -> Unit,
+    private val spinnerCallback: (String, WidgetSettings.Spinner.SpinnerTarget) -> Unit,
     private val sliderCallback: (Float, WidgetSettings.Slider.SliderTarget) -> Unit
 ) : RecyclerView.Adapter<WidgetSettingsBaseViewHolder<WidgetSettings>>() {
 
@@ -31,7 +31,7 @@ class WidgetSettingsAdapter(
 
             WidgetSettingsViewType.SPINNER -> SpinnerViewHolder(
                 binding = WidgetSettingsSpinnerBinding.inflate(layoutInflater, parent, false),
-                languageSpinnerCallback = languageSpinnerCallback
+                spinnerCallback = spinnerCallback
             )
 
             WidgetSettingsViewType.SLIDER -> SliderViewHolder(

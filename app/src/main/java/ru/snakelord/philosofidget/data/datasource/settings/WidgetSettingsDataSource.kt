@@ -20,4 +20,14 @@ interface WidgetSettingsDataSource {
     suspend fun setWidgetUpdateTime(updateTime: Long)
 
     suspend fun getWidgetUpdateTime(): Long
+
+    suspend fun setQuoteTextGravity(gravity: String)
+
+    suspend fun getQuoteTextGravity(): String
+
+    suspend fun setQuoteAuthorTextGravity(gravity: String)
+
+    suspend fun getQuoteAuthorTextGravity(): String
+
+    suspend fun clearWidgetSettingsParams()
 }

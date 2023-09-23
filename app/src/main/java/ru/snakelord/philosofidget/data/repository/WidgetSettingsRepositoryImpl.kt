@@ -30,7 +30,20 @@ class WidgetSettingsRepositoryImpl(
 
     override suspend fun getWidgetUpdateTime(): Long = widgetSettingsDataSource.getWidgetUpdateTime()
 
+    override suspend fun setQuoteTextGravity(gravity: String) = widgetSettingsDataSource.setQuoteTextGravity(gravity)
+
+    override suspend fun getQuoteTextGravity(): String = widgetSettingsDataSource.getQuoteTextGravity()
+
+    override suspend fun setQuoteAuthorTextGravity(gravity: String) = widgetSettingsDataSource.setQuoteAuthorTextGravity(gravity)
+
+    override suspend fun getQuoteAuthorTextGravity(): String = widgetSettingsDataSource.getQuoteAuthorTextGravity()
+
     override suspend fun getWidgetSettings(): Array<WidgetSettings> {
+        val gravityList = listOf(
+            stringResolver.getString(R.string.widget_spinner_text_gravity_start),
+            stringResolver.getString(R.string.widget_spinner_text_gravity_end),
+            stringResolver.getString(R.string.widget_spinner_text_gravity_center)
+        )
         return arrayOf(
             WidgetSettings.Toggle(
                 title = stringResolver.getString(R.string.widget_settings_author_visibility_title),
@@ -43,7 +56,20 @@ class WidgetSettingsRepositoryImpl(
                 variants = listOf(
                     stringResolver.getString(R.string.widget_spinner_lang_russian),
                     stringResolver.getString(R.string.widget_spinner_lang_english)
-                )
+                ),
+                spinnerTarget = WidgetSettings.Spinner.SpinnerTarget.LANGUAGE
+            ),
+            WidgetSettings.Spinner(
+                title = stringResolver.getString(R.string.widget_settings_quote_text_gravity),
+                currentVariant = widgetSettingsDataSource.getQuoteTextGravity(),
+                variants = gravityList,
+                spinnerTarget = WidgetSettings.Spinner.SpinnerTarget.QUOTE_TEXT_GRAVITY
+            ),
+            WidgetSettings.Spinner(
+                title = stringResolver.getString(R.string.widget_settings_quote_author_text_gravity),
+                currentVariant = widgetSettingsDataSource.getQuoteAuthorTextGravity(),
+                variants = gravityList,
+                spinnerTarget = WidgetSettings.Spinner.SpinnerTarget.QUOTE_AUTHOR_GRAVITY
             ),
             WidgetSettings.Slider(
                 title = stringResolver.getString(R.string.widget_settings_quote_text_size),
@@ -68,6 +94,8 @@ class WidgetSettingsRepositoryImpl(
             )
         )
     }
+
+    override suspend fun clearWidgetSettingsParams() = widgetSettingsDataSource.clearWidgetSettingsParams()
 
     private companion object {
         // The lowest possible text size value

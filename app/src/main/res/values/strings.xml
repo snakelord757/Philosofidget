@@ -8,8 +8,13 @@
     <string name="widget_settings_quote_language">Язык (не влияет на превью виджета)</string>
     <string name="widget_spinner_lang_russian">Русский</string>
     <string name="widget_spinner_lang_english">English</string>
+    <string name="widget_spinner_text_gravity_start">Слева</string>
+    <string name="widget_spinner_text_gravity_end">Справа</string>
+    <string name="widget_spinner_text_gravity_center">По центру</string>
     <string name="widget_settings_quote_text_size">Размер текста цитаты</string>
     <string name="widget_settings_quote_author_text_size">Размер текста автора</string>
     <string name="widget_settings_update_time">Время обновления виджета (в часах)</string>
+    <string name="widget_settings_quote_text_gravity">Положение текста цитаты</string>
+    <string name="widget_settings_quote_author_text_gravity">Положение текста автора цитаты</string>
     <string name="add_widget_on_home_screen_error">Текущий лаунчер не поддерживает добавление виджета через приложение</string>
 </resources>

@@ -11,6 +11,7 @@ import ru.snakelord.philosofidget.data.datasource.settings.WidgetSettingsDataSou
 import ru.snakelord.philosofidget.data.repository.WidgetSettingsRepositoryImpl
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractorImpl
+import ru.snakelord.philosofidget.domain.model.WidgetSettings
 import ru.snakelord.philosofidget.domain.repository.WidgetSettingsRepository
 import ru.snakelord.philosofidget.presentation.view.widget_settings.WidgetSettingsViewModel
 
@@ -24,7 +25,7 @@ val widgetSettingsModule = module {
         )
     }
 
-    factory<WidgetSettingsDataSource> { WidgetSettingsDataSourceImpl(get(named(QUOTE_WIDGET_SETTINGS_PREFS))) }
+    factory<WidgetSettingsDataSource> { WidgetSettingsDataSourceImpl(get(named(QUOTE_WIDGET_SETTINGS_PREFS)), get()) }
 
     factory<WidgetSettingsRepository> { WidgetSettingsRepositoryImpl(get(), get()) }
 

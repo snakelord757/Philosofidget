@@ -15,6 +15,7 @@ import ru.snakelord.philosofidget.databinding.FragmentWidgetSettingsBinding
 import ru.snakelord.philosofidget.domain.ext.subscribeOnLifecycle
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
+import ru.snakelord.philosofidget.domain.model.resolveGravity
 import ru.snakelord.philosofidget.presentation.model.ActionButtonState
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.adapter.WidgetSettingsAdapter
@@ -32,8 +33,8 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     private val widgetSettingsAdapter by lazy(LazyThreadSafetyMode.NONE) {
         WidgetSettingsAdapter(
-            toggleCallback = widgetSettingsViewModel::onToggleUpdated,
-            languageSpinnerCallback = widgetSettingsViewModel::onLanguageSelected,
+            toggleCallback = widgetSettingsViewModel::onToggleValueChanged,
+            spinnerCallback = widgetSettingsViewModel::onSpinnerValueChanged,
             sliderCallback = widgetSettingsViewModel::onSliderValueChanged
         )
     }
@@ -64,9 +65,13 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
-        author.isVisible = widgetParams.isAuthorVisible
         quote.textSize = widgetParams.quoteTextSize
-        author.textSize = widgetParams.quoteAuthorTextSize
+        quote.gravity = widgetParams.quoteTextGravity.resolveGravity()
+        author.isVisible = widgetParams.isAuthorVisible
+        if (widgetParams.isAuthorVisible) {
+            author.gravity = widgetParams.quoteAuthorTextGravity.resolveGravity()
+            author.textSize = widgetParams.quoteAuthorTextSize
+        }
     }
 
     private fun setupWidgetSettings(widgetSettings: Array<WidgetSettings>) {
