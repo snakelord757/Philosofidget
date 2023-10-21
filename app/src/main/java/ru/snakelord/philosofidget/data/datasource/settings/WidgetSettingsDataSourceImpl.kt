@@ -1,6 +1,7 @@
 package ru.snakelord.philosofidget.data.datasource.settings
 
 import android.content.SharedPreferences
+import android.graphics.Color
 import androidx.core.content.edit
 import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.domain.string_resolver.StringResolver
@@ -33,28 +34,37 @@ class WidgetSettingsDataSourceImpl(
     override suspend fun getQuoteAuthorTextSize(): Float =
         settingsPreferences.getFloat(PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY, PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT)
 
-    override suspend fun setWidgetUpdateTime(updateTime: Long) = settingsPreferences.edit { putLong(PREFERENCES_WIDGET_UPDATE_TIME, updateTime) }
+    override suspend fun setWidgetUpdateTime(updateTime: Long) = settingsPreferences.edit { putLong(PREFERENCES_WIDGET_UPDATE_TIME_KEY, updateTime) }
 
     override suspend fun getWidgetUpdateTime(): Long =
-        settingsPreferences.getLong(PREFERENCES_WIDGET_UPDATE_TIME, PREFERENCE_WIDGET_UPDATE_TIME_DEFAULT)
+        settingsPreferences.getLong(PREFERENCES_WIDGET_UPDATE_TIME_KEY, PREFERENCE_WIDGET_UPDATE_TIME_DEFAULT)
 
     override suspend fun setQuoteTextGravity(gravity: String) = settingsPreferences.edit {
-        putString(PREFERENCE_QUOTE_TEXT_GRAVITY, gravity)
+        putString(PREFERENCE_QUOTE_TEXT_GRAVITY_KEY, gravity)
     }
 
     override suspend fun getQuoteTextGravity(): String {
         val defaultValue = stringResolver.getString(R.string.widget_spinner_text_gravity_start)
-        return settingsPreferences.getString(PREFERENCE_QUOTE_TEXT_GRAVITY, defaultValue) ?: defaultValue
+        return settingsPreferences.getString(PREFERENCE_QUOTE_TEXT_GRAVITY_KEY, defaultValue) ?: defaultValue
     }
 
     override suspend fun setQuoteAuthorTextGravity(gravity: String) = settingsPreferences.edit {
-        putString(PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY, gravity)
+        putString(PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY_KEY, gravity)
     }
 
     override suspend fun getQuoteAuthorTextGravity(): String {
         val defaultValue = stringResolver.getString(R.string.widget_spinner_text_gravity_end)
-        return settingsPreferences.getString(PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY, defaultValue) ?: defaultValue
+        return settingsPreferences.getString(PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY_KEY, defaultValue) ?: defaultValue
     }
+
+    override suspend fun setQuoteTextColor(color: Int) = settingsPreferences.edit { putInt(PREFERENCE_QUOTE_TEXT_COLOR_KEY, color) }
+
+    override suspend fun getQuoteTextColor(): Int = settingsPreferences.getInt(PREFERENCE_QUOTE_TEXT_COLOR_KEY, PREFERENCE_DEFAULT_TEXT_COLOR)
+
+    override suspend fun setQuoteAuthorTextColor(color: Int) = settingsPreferences.edit { putInt(PREFERENCE_QUOTE_AUTHOR_TEXT_COLOR_KEY, color) }
+
+    override suspend fun getQuoteAuthorTextColor(): Int =
+        settingsPreferences.getInt(PREFERENCE_QUOTE_AUTHOR_TEXT_COLOR_KEY, PREFERENCE_DEFAULT_TEXT_COLOR)
 
     override suspend fun clearWidgetSettingsParams() {
         settingsPreferences.edit { clear() }
@@ -65,13 +75,16 @@ class WidgetSettingsDataSourceImpl(
         const val PREFERENCES_QUOTE_LANGUAGE_KEY = "PREFERENCES_QUOTE_LANGUAGE_KEY"
         const val PREFERENCES_QUOTE_TEXT_SIZE_KEY = "PREFERENCES_QUOTE_TEXT_SIZE_KEY"
         const val PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY = "PREFERENCES_QUOTE_AUTHOR_TEXT_SIZE_KEY"
-        const val PREFERENCES_WIDGET_UPDATE_TIME = "PREFERENCES_WIDGET_UPDATE_TIME"
-        const val PREFERENCE_QUOTE_TEXT_GRAVITY = "PREFERENCE_QUOTE_TEXT_GRAVITY"
-        const val PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY = "PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY"
+        const val PREFERENCES_WIDGET_UPDATE_TIME_KEY = "PREFERENCES_WIDGET_UPDATE_TIME_KEY"
+        const val PREFERENCE_QUOTE_TEXT_GRAVITY_KEY = "PREFERENCE_QUOTE_TEXT_GRAVITY_KEY"
+        const val PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY_KEY = "PREFERENCE_QUOTE_AUTHOR_TEXT_GRAVITY_KEY"
+        const val PREFERENCE_QUOTE_TEXT_COLOR_KEY = "PREFERENCE_QUOTE_TEXT_COLOR_KEY"
+        const val PREFERENCE_QUOTE_AUTHOR_TEXT_COLOR_KEY = "PREFERENCE_QUOTE_AUTHOR_TEXT_COLOR_KEY"
 
         const val PREFERENCE_IS_AUTHOR_VISIBLE_DEFAULT = true
         const val PREFERENCE_QUOTE_TEXT_SIZE_DEFAULT = 30f
         const val PREFERENCE_QUOTE_AUTHOR_TEXT_SIZE_DEFAULT = 15f
         const val PREFERENCE_WIDGET_UPDATE_TIME_DEFAULT = 12L
+        const val PREFERENCE_DEFAULT_TEXT_COLOR = Color.WHITE
     }
 }

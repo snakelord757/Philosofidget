@@ -10,4 +10,5 @@
     <dimen name="widget_settings_text_size">16sp</dimen>
     <dimen name="spacing_20">20dp</dimen>
     <dimen name="seekbar_limit_values_width">20dp</dimen>
+    <dimen name="color_view_size">40dp</dimen>
 </resources>

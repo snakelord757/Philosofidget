@@ -1,5 +1,7 @@
 package ru.snakelord.philosofidget.domain.model
 
+import androidx.annotation.ColorInt
+
 sealed class WidgetSettings {
     data class Toggle(
         val title: String,
@@ -35,6 +37,17 @@ sealed class WidgetSettings {
             QUOTE_TEXT_SIZE,
             QUOTE_AUTHOR_TEXT_SIZE,
             QUOTE_UPDATE_TIME
+        }
+    }
+
+    data class ColorPicker(
+        val title: String,
+        @ColorInt val currentColor: Int,
+        val colorPickerTarget: ColorPickerTarget
+    ): WidgetSettings() {
+        enum class ColorPickerTarget {
+            QUOTE_TEXT_COLOR,
+            QUOTE_AUTHOR_TEXT_COLOR
         }
     }
 }

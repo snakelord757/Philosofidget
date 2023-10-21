@@ -36,6 +36,8 @@ class WidgetSettingsInteractorImpl(
         widgetSettingsRepository.setWidgetUpdateTime(quoteUpdateTime)
         widgetSettingsRepository.setQuoteTextGravity(textGravityMap.findKey(newWidgetParams.quoteTextGravity))
         widgetSettingsRepository.setQuoteAuthorTextGravity(textGravityMap.findKey(newWidgetParams.quoteAuthorTextGravity))
+        widgetSettingsRepository.setQuoteTextColor(newWidgetParams.quoteTextColor)
+        widgetSettingsRepository.setQuoteAuthorTextColor(newWidgetParams.quoteAuthorTextColor)
     }
 
     override suspend fun getWidgetSettings(): Array<WidgetSettings> = widgetSettingsRepository.getWidgetSettings()
@@ -48,7 +50,9 @@ class WidgetSettingsInteractorImpl(
             quoteAuthorTextSize = widgetSettingsRepository.getQuoteAuthorTextSize(),
             quoteUpdateTime = widgetSettingsRepository.getWidgetUpdateTime(),
             quoteTextGravity = resolveGravity(widgetSettingsRepository.getQuoteTextGravity()),
-            quoteAuthorTextGravity = resolveGravity(widgetSettingsRepository.getQuoteAuthorTextGravity())
+            quoteAuthorTextGravity = resolveGravity(widgetSettingsRepository.getQuoteAuthorTextGravity()),
+            quoteTextColor = widgetSettingsRepository.getQuoteTextColor(),
+            quoteAuthorTextColor = widgetSettingsRepository.getQuoteAuthorTextColor()
         )
     }
 

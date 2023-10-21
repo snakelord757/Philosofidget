@@ -1,6 +1,7 @@
 package ru.snakelord.philosofidget.presentation.view.widget_settings
 
 import android.appwidget.AppWidgetManager
+import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
@@ -11,6 +12,8 @@ import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.ColorPicker.ColorPickerTarget.QUOTE_AUTHOR_TEXT_COLOR
+import ru.snakelord.philosofidget.domain.model.WidgetSettings.ColorPicker.ColorPickerTarget.QUOTE_TEXT_COLOR
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_AUTHOR_TEXT_SIZE
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_TEXT_SIZE
 import ru.snakelord.philosofidget.domain.model.WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
@@ -47,9 +50,16 @@ class WidgetSettingsViewModel(
 
     private val widgetPayloads = mutableSetOf<WidgetPayload>()
 
-    fun loadQuoteWidgetParams() = doOnIo { quoteWidgetParamsStateFlow.emit(widgetSettingsInteractor.getQuoteWidgetParams()) }
+    init {
+        doOnIo {
+            loadQuoteWidgetParams()
+            loadWidgetSettings()
+        }
+    }
 
-    fun loadWidgetSettings() = doOnIo { widgetSettingsStateFlow.emit(widgetSettingsInteractor.getWidgetSettings()) }
+    private suspend fun loadQuoteWidgetParams() = quoteWidgetParamsStateFlow.emit(widgetSettingsInteractor.getQuoteWidgetParams())
+
+    private suspend fun loadWidgetSettings() = widgetSettingsStateFlow.emit(widgetSettingsInteractor.getWidgetSettings())
 
     fun setupButtonState() = viewModelScope.launch {
         val hasActiveWidgets = widgetManager.hasActiveWidgets()
@@ -68,60 +78,65 @@ class WidgetSettingsViewModel(
         )
     }
 
-    fun onToggleValueChanged(newValue: Boolean, toggleTarget: ToggleTarget) = doOnIo {
+    fun onToggleValueChanged(newValue: Boolean, toggleTarget: ToggleTarget) = updateWidgetParams {
         when (toggleTarget) {
             ToggleTarget.AUTHOR_VISIBILITY -> {
-                quoteWidgetParamsStateFlow.emit(quoteWidgetParams.value.copy(isAuthorVisible = newValue))
                 widgetPayloads.add(WidgetPayload.AUTHOR_VISIBILITY)
+                copy(isAuthorVisible = newValue)
             }
         }
-        updateButtonEnabledState(isEnabled = true)
     }
 
-    fun onSpinnerValueChanged(newValue: String, spinnerTarget: WidgetSettings.Spinner.SpinnerTarget) = doOnIo {
-        val updatedParams = with(quoteWidgetParamsStateFlow.value) {
-            when (spinnerTarget) {
-                LANGUAGE -> {
-                    widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
-                    copy(quoteLang = widgetSettingsInteractor.resolveLanguage(newValue))
-                }
+    fun onSpinnerValueChanged(newValue: String, spinnerTarget: WidgetSettings.Spinner.SpinnerTarget) = updateWidgetParams {
+        when (spinnerTarget) {
+            LANGUAGE -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_LANGUAGE)
+                copy(quoteLang = widgetSettingsInteractor.resolveLanguage(newValue))
+            }
 
-                QUOTE_TEXT_GRAVITY -> {
-                    widgetPayloads.add(WidgetPayload.QUOTE_TEXT_GRAVITY)
-                    copy(quoteTextGravity = widgetSettingsInteractor.resolveGravity(newValue))
-                }
+            QUOTE_TEXT_GRAVITY -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_TEXT_GRAVITY)
+                copy(quoteTextGravity = widgetSettingsInteractor.resolveGravity(newValue))
+            }
 
-                QUOTE_AUTHOR_GRAVITY -> {
-                    widgetPayloads.add(WidgetPayload.QUOTE_AUTHOR_TEXT_GRAVITY)
-                    copy(quoteAuthorTextGravity = widgetSettingsInteractor.resolveGravity(newValue))
-                }
+            QUOTE_AUTHOR_GRAVITY -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_AUTHOR_TEXT_GRAVITY)
+                copy(quoteAuthorTextGravity = widgetSettingsInteractor.resolveGravity(newValue))
             }
         }
-        quoteWidgetParamsStateFlow.emit(updatedParams)
-        updateButtonEnabledState(isEnabled = true)
     }
 
-    fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = doOnIo {
-        val updatedParams = with(quoteWidgetParamsStateFlow.value) {
-            when (sliderTarget) {
-                QUOTE_TEXT_SIZE -> {
-                    widgetPayloads.add(WidgetPayload.QUOTE_TEXT_SIZE)
-                    copy(quoteTextSize = newValue)
-                }
+    fun onSliderValueChanged(newValue: Float, sliderTarget: WidgetSettings.Slider.SliderTarget) = updateWidgetParams {
+        when (sliderTarget) {
+            QUOTE_TEXT_SIZE -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_TEXT_SIZE)
+                copy(quoteTextSize = newValue)
+            }
 
-                QUOTE_AUTHOR_TEXT_SIZE -> {
-                    widgetPayloads.add(WidgetPayload.AUTHOR_TEXT_SIZE)
-                    copy(quoteAuthorTextSize = newValue)
-                }
+            QUOTE_AUTHOR_TEXT_SIZE -> {
+                widgetPayloads.add(WidgetPayload.AUTHOR_TEXT_SIZE)
+                copy(quoteAuthorTextSize = newValue)
+            }
 
-                QUOTE_UPDATE_TIME -> {
-                    widgetPayloads.add(WidgetPayload.QUOTE_UPDATE_TIME)
-                    copy(quoteUpdateTime = newValue.toLong())
-                }
+            QUOTE_UPDATE_TIME -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_UPDATE_TIME)
+                copy(quoteUpdateTime = newValue.toLong())
             }
         }
-        quoteWidgetParamsStateFlow.emit(updatedParams)
-        updateButtonEnabledState(isEnabled = true)
+    }
+
+    fun onColorPicked(colorPickerTarget: WidgetSettings.ColorPicker.ColorPickerTarget, @ColorInt color: Int) = updateWidgetParams{
+        when (colorPickerTarget) {
+            QUOTE_TEXT_COLOR -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_TEXT_COLOR)
+                copy(quoteTextColor = color)
+            }
+
+            QUOTE_AUTHOR_TEXT_COLOR -> {
+                widgetPayloads.add(WidgetPayload.QUOTE_AUTHOR_TEXT_COLOR)
+                copy(quoteAuthorTextColor = color)
+            }
+        }
     }
 
     private fun requestWidgetUpdate() = doOnIo {
@@ -133,8 +148,13 @@ class WidgetSettingsViewModel(
         if (isInConfigurationMode) widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
     }
 
-    private suspend fun updateButtonEnabledState(isEnabled: Boolean) {
+    private suspend fun updateButtonEnabledState(isEnabled: Boolean) = doOnIo {
         actionButtonStateFlow.emit(actionButtonStateFlow.value?.copy(isEnabled = isEnabled))
+    }
+
+    private fun updateWidgetParams(updateBlock: QuoteWidgetParams.() -> QuoteWidgetParams) = doOnIo {
+        quoteWidgetParamsStateFlow.emit(quoteWidgetParamsStateFlow.value.updateBlock())
+        updateButtonEnabledState(isEnabled = true)
     }
 
     private fun addWidgetOnHomeScreen() {

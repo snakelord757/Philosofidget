@@ -16,5 +16,7 @@
     <string name="widget_settings_update_time">Время обновления виджета (в часах)</string>
     <string name="widget_settings_quote_text_gravity">Положение текста цитаты</string>
     <string name="widget_settings_quote_author_text_gravity">Положение текста автора цитаты</string>
+    <string name="widget_settings_quote_text_color">Цвет текста цитаты</string>
+    <string name="widget_settings_quote_author_text_color">Цвет текста автора цитаты</string>
     <string name="add_widget_on_home_screen_error">Текущий лаунчер не поддерживает добавление виджета через приложение</string>
 </resources>

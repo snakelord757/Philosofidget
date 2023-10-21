@@ -3,10 +3,12 @@ package ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vi
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import ru.snakelord.philosofidget.databinding.WidgetSettingsColorPickerBinding
 import ru.snakelord.philosofidget.databinding.WidgetSettingsSliderBinding
 import ru.snakelord.philosofidget.databinding.WidgetSettingsSpinnerBinding
 import ru.snakelord.philosofidget.databinding.WidgetSettingsToggleBinding
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
+import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.ColorPickerViewHolder
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.SliderViewHolder
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.SpinnerViewHolder
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.viewholder.ToggleViewHolder
@@ -15,7 +17,8 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vie
 class WidgetSettingsAdapter(
     private val toggleCallback: (Boolean, WidgetSettings.Toggle.ToggleTarget) -> Unit,
     private val spinnerCallback: (String, WidgetSettings.Spinner.SpinnerTarget) -> Unit,
-    private val sliderCallback: (Float, WidgetSettings.Slider.SliderTarget) -> Unit
+    private val sliderCallback: (Float, WidgetSettings.Slider.SliderTarget) -> Unit,
+    private val openColorPickerCallback: (WidgetSettings.ColorPicker.ColorPickerTarget) -> Unit
 ) : RecyclerView.Adapter<WidgetSettingsBaseViewHolder<WidgetSettings>>() {
 
     private val widgetSettings = mutableListOf<WidgetSettings>()
@@ -38,6 +41,11 @@ class WidgetSettingsAdapter(
                 binding = WidgetSettingsSliderBinding.inflate(layoutInflater, parent, false),
                 onSliderValueChangedCallback = sliderCallback
             )
+
+            WidgetSettingsViewType.COLOR_PICKER -> ColorPickerViewHolder(
+                binding = WidgetSettingsColorPickerBinding.inflate(layoutInflater, parent, false),
+                openColorPickerCallback = openColorPickerCallback
+            )
         } as WidgetSettingsBaseViewHolder<WidgetSettings>
     }
 
@@ -45,14 +53,12 @@ class WidgetSettingsAdapter(
         holder.bind(widgetSettings[position])
     }
 
-    override fun getItemViewType(position: Int): Int {
-        val type = when (widgetSettings[position]) {
-            is WidgetSettings.Toggle -> WidgetSettingsViewType.TOGGLE
-            is WidgetSettings.Spinner -> WidgetSettingsViewType.SPINNER
-            is WidgetSettings.Slider -> WidgetSettingsViewType.SLIDER
-        }
-        return type.ordinal
-    }
+    override fun getItemViewType(position: Int): Int = when (widgetSettings[position]) {
+        is WidgetSettings.Toggle -> WidgetSettingsViewType.TOGGLE
+        is WidgetSettings.Spinner -> WidgetSettingsViewType.SPINNER
+        is WidgetSettings.Slider -> WidgetSettingsViewType.SLIDER
+        is WidgetSettings.ColorPicker -> WidgetSettingsViewType.COLOR_PICKER
+    }.ordinal
 
     override fun getItemCount(): Int = widgetSettings.size
 
@@ -65,6 +71,7 @@ class WidgetSettingsAdapter(
     private enum class WidgetSettingsViewType {
         TOGGLE,
         SPINNER,
-        SLIDER
+        SLIDER,
+        COLOR_PICKER
     }
 }

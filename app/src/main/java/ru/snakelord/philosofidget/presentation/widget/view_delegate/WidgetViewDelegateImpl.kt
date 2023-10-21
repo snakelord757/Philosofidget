@@ -6,7 +6,10 @@ import android.widget.RemoteViews
 import androidx.annotation.ColorInt
 import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.domain.model.Quote
+import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
 import ru.snakelord.philosofidget.domain.model.TextGravity
+import ru.snakelord.philosofidget.presentation.model.WidgetState
+import ru.snakelord.philosofidget.presentation.widget.widget_manager.WidgetPayload
 
 class WidgetViewDelegateImpl(override val widgetView: RemoteViews) : WidgetViewDelegate {
 
@@ -32,9 +35,9 @@ class WidgetViewDelegateImpl(override val widgetView: RemoteViews) : WidgetViewD
 
     override fun setQuoteAuthorTextSize(size: Float) = quoteAuthorIdsMap.values.forEach { setTextSize(it, size) }
 
-    override fun setQuoteTextColor(@ColorInt color: Int) = widgetView.setTextColor(R.id.quote, color)
+    override fun setQuoteTextColor(@ColorInt color: Int) = quoteIdsMap.values.forEach { widgetView.setTextColor(it, color) }
 
-    override fun setQuoteAuthorTextColor(@ColorInt color: Int) = widgetView.setTextColor(R.id.author, color)
+    override fun setQuoteAuthorTextColor(@ColorInt color: Int) = quoteAuthorIdsMap.values.forEach { widgetView.setTextColor(it, color) }
 
     override fun isAuthorVisible(isAuthorVisible: Boolean) =
         quoteAuthorIdsMap.values.forEach { updateViewVisibility(viewId = it, isViewVisible = isAuthorVisible) }
@@ -45,6 +48,17 @@ class WidgetViewDelegateImpl(override val widgetView: RemoteViews) : WidgetViewD
 
     override fun setQuoteAuthorTextGravity(textGravity: TextGravity) {
         updateTextVisibility(viewsMap = quoteAuthorIdsMap, textGravity = textGravity)
+    }
+
+    override fun setupWidget(widgetState: WidgetState) {
+        setQuote(widgetState.quote)
+        setQuoteTextSize(widgetState.quoteTextSize)
+        isAuthorVisible(widgetState.isAuthorVisible)
+        setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
+        setQuoteTextGravity(widgetState.quoteTextGravity)
+        setQuoteAuthorTextGravity(widgetState.quoteAuthorTextGravity)
+        setQuoteTextColor(widgetState.quoteTextColor)
+        setQuoteAuthorTextColor(widgetState.quoteAuthorTextColor)
     }
 
     private fun updateTextVisibility(viewsMap: Map<TextGravity, Int>, textGravity: TextGravity) {
