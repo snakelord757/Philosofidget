@@ -12,6 +12,8 @@ class QuoteWidgetStateMapper {
             quoteTextSize = widgetParams.quoteTextSize,
             quoteAuthorTextSize = widgetParams.quoteAuthorTextSize,
             quoteTextGravity = widgetParams.quoteTextGravity,
-            quoteAuthorTextGravity = widgetParams.quoteAuthorTextGravity
+            quoteAuthorTextGravity = widgetParams.quoteAuthorTextGravity,
+            quoteTextColor = widgetParams.quoteTextColor,
+            quoteAuthorTextColor = widgetParams.quoteAuthorTextColor
         )
 }

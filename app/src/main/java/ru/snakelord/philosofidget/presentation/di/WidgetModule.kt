@@ -82,7 +82,7 @@ val widgetModule = module {
 
     factory { QuoteWidgetStateMapper() }
 
-    factory<WidgetViewDelegate> { WidgetViewDelegateImpl(RemoteViews(androidApplication().packageName, R.layout.widget_quote)) }
+    single<WidgetViewDelegate> { WidgetViewDelegateImpl(RemoteViews(androidApplication().packageName, R.layout.widget_quote)) }
 
     factory<CoroutineUseCaseWithParams<Quote, Unit>>(named(UseCases.STORE_QUOTE)) { StoreQuoteUseCase(get()) }
 

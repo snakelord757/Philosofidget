@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.abhishek.colorpicker.ColorPickerDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.snakelord.philosofidget.R
@@ -24,18 +25,18 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vie
 class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     private var viewBinding: FragmentWidgetSettingsBinding? = null
-    private val binding
-        get() = viewBinding ?: error("ViewBinding isn't initialized!")
+    private val binding by lazy(LazyThreadSafetyMode.NONE) { viewBinding ?: error("ViewBinding isn't initialized!") }
 
     private val widgetSettingsViewModel by viewModel<WidgetSettingsViewModel> {
-        parametersOf(arguments?.getInt(BUNDLE_WIDGET_ID_KEY, UNDEFINED_WIDGET_ID) ?: UNDEFINED_WIDGET_ID)
+        parametersOf(requireArguments().getInt(BUNDLE_WIDGET_ID_KEY, UNDEFINED_WIDGET_ID))
     }
 
     private val widgetSettingsAdapter by lazy(LazyThreadSafetyMode.NONE) {
         WidgetSettingsAdapter(
             toggleCallback = widgetSettingsViewModel::onToggleValueChanged,
             spinnerCallback = widgetSettingsViewModel::onSpinnerValueChanged,
-            sliderCallback = widgetSettingsViewModel::onSliderValueChanged
+            sliderCallback = widgetSettingsViewModel::onSliderValueChanged,
+            openColorPickerCallback = ::openColorPickerDialog
         )
     }
 
@@ -51,12 +52,17 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     private fun subscribeToViewModel() = with(widgetSettingsViewModel) {
-        loadWidgetSettings()
-        loadQuoteWidgetParams()
         widgetSettings.subscribeOnLifecycle(viewLifecycleOwner, ::setupWidgetSettings)
         quoteWidgetParams.subscribeOnLifecycle(viewLifecycleOwner, ::updateWidgetPreview)
         widgetConfigurationState.subscribeOnLifecycle(viewLifecycleOwner, ::onConfigurationSaved)
         actionButtonState.subscribeOnLifecycle(viewLifecycleOwner, ::setupActionButton)
+    }
+
+    private fun openColorPickerDialog(colorPickerTarget: WidgetSettings.ColorPicker.ColorPickerTarget) {
+        ColorPickerDialog().apply {
+            setOnOkCancelListener { isOk, color -> if (isOk) widgetSettingsViewModel.onColorPicked(colorPickerTarget, color) }
+        }
+            .show(parentFragmentManager)
     }
 
     override fun onResume() {
@@ -67,7 +73,9 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
         quote.textSize = widgetParams.quoteTextSize
         quote.gravity = widgetParams.quoteTextGravity.resolveGravity()
+        quote.setTextColor(widgetParams.quoteTextColor)
         author.isVisible = widgetParams.isAuthorVisible
+        author.setTextColor(widgetParams.quoteAuthorTextColor)
         if (widgetParams.isAuthorVisible) {
             author.gravity = widgetParams.quoteAuthorTextGravity.resolveGravity()
             author.textSize = widgetParams.quoteAuthorTextSize
@@ -101,6 +109,7 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         private const val BUNDLE_WIDGET_ID_KEY = "BUNDLE_WIDGET_ID_KEY"
         const val UNDEFINED_WIDGET_ID = WidgetSettingsViewModel.UNDEFINED_WIDGET_ID
         const val TAG = "WidgetSettingsFragment"
+
         fun newInstance(widgetId: Int) = WidgetSettingsFragment().apply {
             arguments = bundleOf(BUNDLE_WIDGET_ID_KEY to widgetId)
         }

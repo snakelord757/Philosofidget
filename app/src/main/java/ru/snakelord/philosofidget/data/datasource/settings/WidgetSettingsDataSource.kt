@@ -1,5 +1,7 @@
 package ru.snakelord.philosofidget.data.datasource.settings
 
+import androidx.annotation.ColorInt
+
 interface WidgetSettingsDataSource {
     suspend fun getAuthorVisibility(): Boolean
 
@@ -28,6 +30,14 @@ interface WidgetSettingsDataSource {
     suspend fun setQuoteAuthorTextGravity(gravity: String)
 
     suspend fun getQuoteAuthorTextGravity(): String
+
+    suspend fun setQuoteTextColor(@ColorInt color: Int)
+
+    suspend fun getQuoteTextColor(): Int
+
+    suspend fun setQuoteAuthorTextColor(@ColorInt color: Int)
+
+    suspend fun getQuoteAuthorTextColor(): Int
 
     suspend fun clearWidgetSettingsParams()
 }

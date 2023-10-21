@@ -1,5 +1,6 @@
 package ru.snakelord.philosofidget.data.repository
 
+import android.graphics.Color
 import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.data.datasource.settings.WidgetSettingsDataSource
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
@@ -37,6 +38,14 @@ class WidgetSettingsRepositoryImpl(
     override suspend fun setQuoteAuthorTextGravity(gravity: String) = widgetSettingsDataSource.setQuoteAuthorTextGravity(gravity)
 
     override suspend fun getQuoteAuthorTextGravity(): String = widgetSettingsDataSource.getQuoteAuthorTextGravity()
+
+    override suspend fun setQuoteTextColor(color: Int) = widgetSettingsDataSource.setQuoteTextColor(color)
+
+    override suspend fun getQuoteTextColor(): Int = widgetSettingsDataSource.getQuoteTextColor()
+
+    override suspend fun setQuoteAuthorTextColor(color: Int) = widgetSettingsDataSource.setQuoteAuthorTextColor(color)
+
+    override suspend fun getQuoteAuthorTextColor(): Int = widgetSettingsDataSource.getQuoteAuthorTextColor()
 
     override suspend fun getWidgetSettings(): Array<WidgetSettings> {
         val gravityList = listOf(
@@ -91,6 +100,16 @@ class WidgetSettingsRepositoryImpl(
                 minValue = QUOTE_UPDATE_TIME_MIN_HOUR,
                 maxValue = QUOTE_UPDATE_TIME_MAX_HOUR,
                 sliderTarget = WidgetSettings.Slider.SliderTarget.QUOTE_UPDATE_TIME
+            ),
+            WidgetSettings.ColorPicker(
+                title = stringResolver.getString(R.string.widget_settings_quote_text_color),
+                currentColor = widgetSettingsDataSource.getQuoteTextColor(),
+                colorPickerTarget = WidgetSettings.ColorPicker.ColorPickerTarget.QUOTE_TEXT_COLOR
+            ),
+            WidgetSettings.ColorPicker(
+                title = stringResolver.getString(R.string.widget_settings_quote_author_text_color),
+                currentColor = widgetSettingsDataSource.getQuoteAuthorTextColor(),
+                colorPickerTarget = WidgetSettings.ColorPicker.ColorPickerTarget.QUOTE_AUTHOR_TEXT_COLOR
             )
         )
     }

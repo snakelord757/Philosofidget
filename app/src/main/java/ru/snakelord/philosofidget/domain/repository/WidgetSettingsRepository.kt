@@ -1,5 +1,6 @@
 package ru.snakelord.philosofidget.domain.repository
 
+import androidx.annotation.ColorInt
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
 
 interface WidgetSettingsRepository {
@@ -30,6 +31,14 @@ interface WidgetSettingsRepository {
     suspend fun setQuoteAuthorTextGravity(gravity: String)
 
     suspend fun getQuoteAuthorTextGravity(): String
+
+    suspend fun setQuoteTextColor(@ColorInt color: Int)
+
+    suspend fun getQuoteTextColor(): Int
+
+    suspend fun setQuoteAuthorTextColor(@ColorInt color: Int)
+
+    suspend fun getQuoteAuthorTextColor(): Int
 
     suspend fun getWidgetSettings(): Array<WidgetSettings>
 

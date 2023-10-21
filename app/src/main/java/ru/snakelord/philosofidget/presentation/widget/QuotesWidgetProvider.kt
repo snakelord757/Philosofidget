@@ -51,20 +51,18 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
         handlePayloads(widgetState)
         val isLanguageChanged = payloads.contains(WidgetPayload.QUOTE_LANGUAGE)
         val isUpdateTimeChanged = payloads.contains(WidgetPayload.QUOTE_UPDATE_TIME)
-        val isShouldSetOnlyQuote = payloads.contains(WidgetPayload.QUOTE)
-        val needFullUpdate = ((isLanguageChanged || isUpdateTimeChanged) && isShouldSetOnlyQuote.not())
-        if (needFullUpdate) startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
+        if (isLanguageChanged || isUpdateTimeChanged) startQuoteLoadingWorker(context = context, shouldRestart = isLanguageChanged)
     }
 
     private fun handlePayloads(widgetState: WidgetState) = with(widgetViewDelegate) {
         payloads.forEach {
             when (it) {
-                WidgetPayload.QUOTE -> setQuote(widgetState.quote)
+                WidgetPayload.QUOTE -> setupWidget(widgetState)
+                WidgetPayload.QUOTE_AUTHOR_TEXT_GRAVITY -> setQuoteAuthorTextGravity(widgetState.quoteAuthorTextGravity)
                 WidgetPayload.QUOTE_TEXT_SIZE -> setQuoteTextSize(widgetState.quoteTextSize)
                 WidgetPayload.AUTHOR_VISIBILITY -> isAuthorVisible(widgetState.isAuthorVisible)
                 WidgetPayload.AUTHOR_TEXT_SIZE -> setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
                 WidgetPayload.QUOTE_TEXT_GRAVITY -> setQuoteTextGravity(widgetState.quoteTextGravity)
-                WidgetPayload.QUOTE_AUTHOR_TEXT_GRAVITY -> setQuoteAuthorTextGravity(widgetState.quoteAuthorTextGravity)
                 else -> Unit
             }
         }
