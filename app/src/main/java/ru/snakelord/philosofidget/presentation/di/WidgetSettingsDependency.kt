@@ -8,7 +8,9 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.snakelord.philosofidget.data.datasource.settings.WidgetSettingsDataSource
 import ru.snakelord.philosofidget.data.datasource.settings.WidgetSettingsDataSourceImpl
+import ru.snakelord.philosofidget.data.datasource.settings.WidgetSettingsFactoryImpl
 import ru.snakelord.philosofidget.data.repository.WidgetSettingsRepositoryImpl
+import ru.snakelord.philosofidget.domain.factory.WidgetSettingsFactory
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractor
 import ru.snakelord.philosofidget.domain.interactor.WidgetSettingsInteractorImpl
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
@@ -30,6 +32,8 @@ val widgetSettingsModule = module {
     factory<WidgetSettingsRepository> { WidgetSettingsRepositoryImpl(get(), get()) }
 
     factory<WidgetSettingsInteractor> { WidgetSettingsInteractorImpl(get(), get()) }
+
+    factory<WidgetSettingsFactory> { WidgetSettingsFactoryImpl(get(), get()) }
 
     viewModel { (targetWidgetId: Int) ->
         WidgetSettingsViewModel(
