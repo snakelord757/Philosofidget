@@ -125,7 +125,7 @@ class WidgetSettingsViewModel(
         }
     }
 
-    fun onColorPicked(colorPickerTarget: WidgetSettings.ColorPicker.ColorPickerTarget, @ColorInt color: Int) = updateWidgetParams{
+    fun onColorPicked(colorPickerTarget: WidgetSettings.ColorPicker.ColorPickerTarget, @ColorInt color: Int) = updateWidgetParams {
         when (colorPickerTarget) {
             QUOTE_TEXT_COLOR -> {
                 widgetPayloads.add(WidgetPayload.QUOTE_TEXT_COLOR)
@@ -140,12 +140,12 @@ class WidgetSettingsViewModel(
     }
 
     private fun requestWidgetUpdate() = doOnIo {
-        val isInConfigurationMode = isInConfigurationMode()
-        if (isInConfigurationMode || !widgetManager.hasActiveWidgets()) widgetPayloads.add(WidgetPayload.QUOTE)
         widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
-        updateButtonEnabledState(isEnabled = false)
-        widgetManager.updateWidget(widgetPayloads)
-        if (isInConfigurationMode) widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
+        viewModelScope.launch {
+            updateButtonEnabledState(isEnabled = false)
+            widgetManager.updateWidget(widgetPayloads)
+            if (isInConfigurationMode()) widgetConfigurationStateFlow.emit(widgetConfigurationStateFlow.value.copy(isConfigurationSaved = true))
+        }
     }
 
     private suspend fun updateButtonEnabledState(isEnabled: Boolean) = doOnIo {
@@ -157,8 +157,13 @@ class WidgetSettingsViewModel(
         updateButtonEnabledState(isEnabled = true)
     }
 
-    private fun addWidgetOnHomeScreen() {
-        viewModelScope.launch { widgetManager.addWidgetOnHomeScreen() }
+    private fun addWidgetOnHomeScreen() = doOnIo {
+        widgetSettingsInteractor.setNewWidgetParams(quoteWidgetParams.value)
+        viewModelScope.launch {
+            widgetPayloads.clear()
+            updateButtonEnabledState(isEnabled = false)
+            widgetManager.addWidgetOnHomeScreen()
+        }
     }
 
     private fun doOnIo(block: suspend () -> Unit) {

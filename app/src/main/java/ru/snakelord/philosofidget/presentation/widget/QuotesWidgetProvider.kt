@@ -38,11 +38,7 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
             val quoteWidgetState = quoteWidgetStateMapper.map(quote, quoteWidgetParams)
             doOnMain {
                 setupWidgetView(context, quoteWidgetState)
-                if (needFullUpdate()) {
-                    appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
-                } else {
-                    appWidgetManager.partiallyUpdateAppWidget(widgetId, widgetViewDelegate.widgetView)
-                }
+                appWidgetManager.updateAppWidget(widgetId, widgetViewDelegate.widgetView)
             }
         }
     }
@@ -63,6 +59,8 @@ class QuotesWidgetProvider : BaseAppWidgetProvider(), KoinComponent {
                 WidgetPayload.AUTHOR_VISIBILITY -> isAuthorVisible(widgetState.isAuthorVisible)
                 WidgetPayload.AUTHOR_TEXT_SIZE -> setQuoteAuthorTextSize(widgetState.quoteAuthorTextSize)
                 WidgetPayload.QUOTE_TEXT_GRAVITY -> setQuoteTextGravity(widgetState.quoteTextGravity)
+                WidgetPayload.QUOTE_TEXT_COLOR -> setQuoteTextColor(widgetState.quoteTextColor)
+                WidgetPayload.QUOTE_AUTHOR_TEXT_COLOR -> setQuoteAuthorTextColor(widgetState.quoteAuthorTextColor)
                 else -> Unit
             }
         }
