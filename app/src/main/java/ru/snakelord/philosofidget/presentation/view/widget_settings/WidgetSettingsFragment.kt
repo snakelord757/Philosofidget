@@ -4,6 +4,7 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
@@ -15,8 +16,8 @@ import ru.snakelord.philosofidget.R
 import ru.snakelord.philosofidget.databinding.FragmentWidgetSettingsBinding
 import ru.snakelord.philosofidget.domain.ext.subscribeOnLifecycle
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
+import ru.snakelord.philosofidget.domain.model.TextGravity
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
-import ru.snakelord.philosofidget.domain.model.resolveGravity
 import ru.snakelord.philosofidget.presentation.model.ActionButtonState
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.adapter.WidgetSettingsAdapter
@@ -25,7 +26,8 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vie
 class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     private var viewBinding: FragmentWidgetSettingsBinding? = null
-    private val binding by lazy(LazyThreadSafetyMode.NONE) { viewBinding ?: error("ViewBinding isn't initialized!") }
+    private val binding
+        get() = viewBinding ?: error("ViewBinding isn't initialized!")
 
     private val widgetSettingsViewModel by viewModel<WidgetSettingsViewModel> {
         parametersOf(requireArguments().getInt(BUNDLE_WIDGET_ID_KEY, UNDEFINED_WIDGET_ID))
@@ -55,12 +57,14 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         widgetSettings.subscribeOnLifecycle(viewLifecycleOwner, ::setupWidgetSettings)
         quoteWidgetParams.subscribeOnLifecycle(viewLifecycleOwner, ::updateWidgetPreview)
         widgetConfigurationState.subscribeOnLifecycle(viewLifecycleOwner, ::onConfigurationSaved)
-        actionButtonState.subscribeOnLifecycle(viewLifecycleOwner, ::setupActionButton)
+        actionButtonState.subscribeOnLifecycle(viewLifecycleOwner) { if (it != null) setupActionButton(it) }
     }
 
     private fun openColorPickerDialog(colorPickerTarget: WidgetSettings.ColorPicker.ColorPickerTarget) {
         ColorPickerDialog().apply {
-            setOnOkCancelListener { isOk, color -> if (isOk) widgetSettingsViewModel.onColorPicked(colorPickerTarget, color) }
+            setOnOkCancelListener { isOk, color ->
+                if (isOk) widgetSettingsViewModel.onColorPicked(colorPickerTarget, color)
+            }
         }
             .show(parentFragmentManager)
     }
@@ -72,14 +76,20 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
         quote.textSize = widgetParams.quoteTextSize
-        quote.gravity = widgetParams.quoteTextGravity.resolveGravity()
+        quote.gravity = resolveAndroidGravity(widgetParams.quoteTextGravity)
         quote.setTextColor(widgetParams.quoteTextColor)
         author.isVisible = widgetParams.isAuthorVisible
         author.setTextColor(widgetParams.quoteAuthorTextColor)
         if (widgetParams.isAuthorVisible) {
-            author.gravity = widgetParams.quoteAuthorTextGravity.resolveGravity()
+            author.gravity = resolveAndroidGravity(widgetParams.quoteAuthorTextGravity)
             author.textSize = widgetParams.quoteAuthorTextSize
         }
+    }
+
+    private fun resolveAndroidGravity(textGravity: TextGravity): Int = when (textGravity) {
+        TextGravity.START -> Gravity.START
+        TextGravity.END -> Gravity.END
+        TextGravity.CENTER -> Gravity.CENTER
     }
 
     private fun setupWidgetSettings(widgetSettings: Array<WidgetSettings>) {
@@ -87,17 +97,18 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     private fun onConfigurationSaved(widgetConfigurationState: WidgetConfigurationState) {
-        val hostActivity = requireActivity()
-        val result = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetConfigurationState.targetWidgetId)
+        val resultIntent = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetConfigurationState.targetWidgetId)
         val resultCode = if (widgetConfigurationState.isConfigurationSaved) Activity.RESULT_OK else Activity.RESULT_CANCELED
-        hostActivity.setResult(resultCode, result)
-        if (widgetConfigurationState.isConfigurationSaved) hostActivity.finish()
+        requireActivity().apply {
+            setResult(resultCode, resultIntent)
+            if (widgetConfigurationState.isConfigurationSaved) finish()
+        }
     }
 
-    private fun setupActionButton(state: ActionButtonState?) = state?.let {
-        binding.actionButton.text = it.title
-        binding.actionButton.setOnClickListener { _ -> it.onClickAction.invoke() }
-        binding.actionButton.isEnabled = it.isEnabled
+    private fun setupActionButton(state: ActionButtonState) = with(binding.actionButton) {
+        text = state.title
+        setOnClickListener { _ -> state.onClickAction.invoke() }
+        isEnabled = state.isEnabled
     }
 
     override fun onDestroyView() {
