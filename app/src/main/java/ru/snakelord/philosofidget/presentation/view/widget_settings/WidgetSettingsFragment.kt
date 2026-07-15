@@ -27,7 +27,7 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     private var viewBinding: FragmentWidgetSettingsBinding? = null
     private val binding
-        get() = viewBinding ?: error("ViewBinding isn't initialized!")
+        get() = viewBinding!!
 
     private val widgetSettingsViewModel by viewModel<WidgetSettingsViewModel> {
         parametersOf(requireArguments().getInt(BUNDLE_WIDGET_ID_KEY, UNDEFINED_WIDGET_ID))
