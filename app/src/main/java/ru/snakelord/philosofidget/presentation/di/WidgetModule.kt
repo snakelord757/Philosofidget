@@ -3,7 +3,7 @@ package ru.snakelord.philosofidget.presentation.di
 import android.content.Context
 import android.content.SharedPreferences
 import android.widget.RemoteViews
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
