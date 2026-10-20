@@ -3,7 +3,7 @@ package ru.snakelord.philosofidget.presentation.di
 import android.content.Context
 import android.content.SharedPreferences
 import org.koin.android.ext.koin.androidApplication
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.snakelord.philosofidget.data.datasource.settings.WidgetSettingsDataSource
