@@ -6,9 +6,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
+import android.widget.Button
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import com.abhishek.colorpicker.ColorPickerDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -20,10 +22,14 @@ import ru.snakelord.philosofidget.domain.model.TextGravity
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
 import ru.snakelord.philosofidget.presentation.model.ActionButtonState
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
+import ru.snakelord.philosofidget.quotetopics.data.QuoteTopicsRepository
+import ru.snakelord.philosofidget.quotetopics.presentation.QuoteTopicsFragment
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.adapter.WidgetSettingsAdapter
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.itemdecoration.WidgetSettingsItemDecoration
 
 class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
+
+    private var quoteTopicButton: Button? = null
 
     private var viewBinding: FragmentWidgetSettingsBinding? = null
     private val binding
@@ -44,6 +50,14 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewBinding = FragmentWidgetSettingsBinding.bind(view)
+        quoteTopicButton = view.findViewById<Button>(R.id.quoteTopicButton)?.apply {
+            setOnClickListener {
+                parentFragmentManager.commit {
+                    replace(R.id.fragment_container_view, QuoteTopicsFragment())
+                    addToBackStack("quote_topics")
+                }
+            }
+        }
         initUi()
         subscribeToViewModel()
     }
@@ -72,6 +86,8 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     override fun onResume() {
         super.onResume()
         widgetSettingsViewModel.setupButtonState()
+        val selectedTopic = QuoteTopicsRepository(requireContext()).selectedTopic()
+        quoteTopicButton?.text = "Тема цитат: ${selectedTopic?.title ?: "Не выбрана"}"
     }
 
     private fun updateWidgetPreview(widgetParams: QuoteWidgetParams) = with(binding.quoteWidgetPreview) {
@@ -112,6 +128,7 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     override fun onDestroyView() {
+        quoteTopicButton = null
         viewBinding = null
         super.onDestroyView()
     }
