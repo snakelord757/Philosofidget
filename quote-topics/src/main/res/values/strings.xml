@@ -1,0 +1,8 @@
+<resources>
+    <string name="quote_topics_title">Темы цитат</string>
+    <string name="quote_topics_back">Назад</string>
+    <string name="quote_topics_confirm_title">Выбрать тему?</string>
+    <string name="quote_topics_confirm_message">Текущая тема для цитат: «%1$s»</string>
+    <string name="quote_topics_confirm">Выбрать</string>
+    <string name="quote_topics_cancel">Отмена</string>
+</resources>

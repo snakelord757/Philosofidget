@@ -6,6 +6,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
+import android.widget.TextView
+import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -13,6 +19,8 @@ import com.abhishek.colorpicker.ColorPickerDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.snakelord.philosofidget.R
+import ru.snakelord.philosofidget.quotetopics.presentation.QuoteTopicsFragment
+import ru.snakelord.philosofidget.quotetopics.presentation.QuoteTopicsViewModel
 import ru.snakelord.philosofidget.databinding.FragmentWidgetSettingsBinding
 import ru.snakelord.philosofidget.domain.ext.subscribeOnLifecycle
 import ru.snakelord.philosofidget.domain.model.QuoteWidgetParams
@@ -24,6 +32,10 @@ import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_vie
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.itemdecoration.WidgetSettingsItemDecoration
 
 class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
+
+    private var currentQuoteTopic: TextView? = null
+    private var chooseQuoteTopic: View? = null
+    private val quoteTopicsViewModel by viewModel<QuoteTopicsViewModel>()
 
     private var viewBinding: FragmentWidgetSettingsBinding? = null
     private val binding
@@ -46,11 +58,39 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
         viewBinding = FragmentWidgetSettingsBinding.bind(view)
         initUi()
         subscribeToViewModel()
+        currentQuoteTopic = view.findViewById(R.id.currentQuoteTopic)
+        chooseQuoteTopic = view.findViewById<View>(R.id.chooseQuoteTopic).apply {
+            setOnClickListener {
+                if (parentFragmentManager.isStateSaved) return@setOnClickListener
+                isEnabled = false
+                parentFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    hide(this@WidgetSettingsFragment)
+                    add(R.id.fragment_container_view, QuoteTopicsFragment())
+                    addToBackStack("quote_topics")
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                quoteTopicsViewModel.selectedTopic.collect { topic ->
+                    currentQuoteTopic?.text = getString(
+                        R.string.quote_topic_current,
+                        topic?.title ?: getString(R.string.quote_topic_none)
+                    )
+                }
+            }
+        }
     }
 
     private fun initUi() = with(binding) {
         settingsRecyclerView.adapter = widgetSettingsAdapter
         settingsRecyclerView.addItemDecoration(WidgetSettingsItemDecoration(resources.getDimensionPixelSize(R.dimen.spacing_16)))
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden) chooseQuoteTopic?.isEnabled = true
     }
 
     private fun subscribeToViewModel() = with(widgetSettingsViewModel) {
@@ -112,6 +152,9 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     override fun onDestroyView() {
+        chooseQuoteTopic?.setOnClickListener(null)
+        chooseQuoteTopic = null
+        currentQuoteTopic = null
         viewBinding = null
         super.onDestroyView()
     }
