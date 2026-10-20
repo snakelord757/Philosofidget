@@ -19,4 +19,7 @@
     <string name="widget_settings_quote_text_color">Цвет текста цитаты</string>
     <string name="widget_settings_quote_author_text_color">Цвет текста автора цитаты</string>
     <string name="add_widget_on_home_screen_error">Текущий лаунчер не поддерживает добавление виджета через приложение</string>
+    <string name="quote_topic_current">Тема цитат: %1$s</string>
+    <string name="quote_topic_none">Не выбрана</string>
+    <string name="quote_topic_choose">Выбрать тему цитат</string>
 </resources>
