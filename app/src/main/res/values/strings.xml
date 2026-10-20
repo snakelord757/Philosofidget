@@ -1,4 +1,32 @@
 <resources>
+    <string name="quote_topics_title">Темы цитат</string>
+    <string name="quote_topics_back">Назад к настройкам</string>
+    <string name="quote_topic_current">Тема цитат: %1$s</string>
+    <string name="quote_topic_confirm_title">Выбор темы</string>
+    <string name="quote_topic_confirm_message">Выбрать тему «%1$s»?</string>
+    <string name="quote_topic_confirm">Выбрать</string>
+    <string-array name="quote_topics">
+        <item>Все темы</item>
+        <item>Жизнь</item>
+        <item>Любовь</item>
+        <item>Дружба</item>
+        <item>Счастье</item>
+        <item>Мудрость</item>
+        <item>Философия</item>
+        <item>Мотивация</item>
+        <item>Успех</item>
+        <item>Мечты</item>
+        <item>Время</item>
+        <item>Свобода</item>
+        <item>Творчество</item>
+        <item>Знания</item>
+        <item>Природа</item>
+        <item>Смелость</item>
+        <item>Надежда</item>
+        <item>Семья</item>
+        <item>Путешествия</item>
+        <item>Юмор</item>
+    </string-array>
     <string name="app_name">Philosofidget</string>
     <string name="widget_preview_quote">Ленивых людей не бывает. Бывают никудышные цели — то есть такие цели, которые не вдохновляют.</string>
     <string name="widget_preview_quote_author">Энтони Роббинс</string>

@@ -9,6 +9,7 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import com.abhishek.colorpicker.ColorPickerDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -20,6 +21,8 @@ import ru.snakelord.philosofidget.domain.model.TextGravity
 import ru.snakelord.philosofidget.domain.model.WidgetSettings
 import ru.snakelord.philosofidget.presentation.model.ActionButtonState
 import ru.snakelord.philosofidget.presentation.model.WidgetConfigurationState
+import ru.snakelord.philosofidget.presentation.view.quote_topics.QuoteTopicsFragment
+import ru.snakelord.philosofidget.presentation.view.quote_topics.QuoteTopicSelection
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.adapter.WidgetSettingsAdapter
 import ru.snakelord.philosofidget.presentation.view.widget_settings.recycler_view.itemdecoration.WidgetSettingsItemDecoration
 
@@ -49,6 +52,14 @@ class WidgetSettingsFragment : Fragment(R.layout.fragment_widget_settings) {
     }
 
     private fun initUi() = with(binding) {
+        val topic = QuoteTopicSelection.getTitle(requireContext())
+        quoteTopicButton.text = getString(R.string.quote_topic_current, topic)
+        quoteTopicButton.setOnClickListener {
+            parentFragmentManager.commit {
+                replace(R.id.fragment_container_view, QuoteTopicsFragment())
+                addToBackStack(null)
+            }
+        }
         settingsRecyclerView.adapter = widgetSettingsAdapter
         settingsRecyclerView.addItemDecoration(WidgetSettingsItemDecoration(resources.getDimensionPixelSize(R.dimen.spacing_16)))
     }
