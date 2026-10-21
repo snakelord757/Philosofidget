@@ -1,5 +1,6 @@
 package ru.snakelord.philosofidget.quote
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -44,6 +45,23 @@ class QuoteRepositoryTest {
         assertSame(failure, runCatching { repository.storeQuote(Quote("Text", "")) }.exceptionOrNull())
         assertSame(failure, runCatching { repository.getStoredQuote() }.exceptionOrNull())
         assertSame(failure, runCatching { repository.removeStoredQuote() }.exceptionOrNull())
+    }
+
+    @Test fun `cancelled operations preserve the previously stored quote`() = runBlocking {
+        val source = RecordingQuoteDataSource()
+        val repository = QuoteRepositoryImpl(source)
+        val saved = Quote("Saved", "Author")
+        repository.storeQuote(saved)
+        val cancellation = CancellationException("cancelled")
+        source.failure = cancellation
+        assertSame(cancellation, runCatching { repository.getQuote(1, Lang.RU) }.exceptionOrNull())
+        assertSame(cancellation, runCatching { repository.storeQuote(Quote("Replacement", "")) }.exceptionOrNull())
+        assertSame(cancellation, runCatching { repository.getStoredQuote() }.exceptionOrNull())
+        assertSame(cancellation, runCatching { repository.removeStoredQuote() }.exceptionOrNull())
+        source.failure = null
+        assertSame(saved, repository.getStoredQuote())
+        assertEquals(0, source.removals)
+        assertTrue(source.requests.isEmpty())
     }
 }
 

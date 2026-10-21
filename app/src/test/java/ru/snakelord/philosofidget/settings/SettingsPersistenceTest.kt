@@ -15,6 +15,28 @@ import ru.snakelord.philosofidget.domain.usecase.quote.GetUpdateTimeUseCase
 import ru.snakelord.philosofidget.domain.usecase.widget_settings.RemoveQuoteParamsUseCase
 
 class SettingsPersistenceTest {
+    @Test fun changingOneStoredSettingLeavesEveryOtherSettingUnchanged() = runBlocking {
+        val fixture = SettingsFixture()
+        val baseline = fixture.interactor.getQuoteWidgetParams()
+        val changes: List<Pair<suspend () -> Unit, QuoteWidgetParams>> = listOf(
+            (suspend { fixture.repository.setAuthorVisibility(false) }) to baseline.copy(isAuthorVisible = false),
+            (suspend { fixture.repository.setQuoteLanguage("English") }) to baseline.copy(quoteLang = Lang.ENG),
+            (suspend { fixture.repository.setQuoteTextSize(11f) }) to baseline.copy(quoteTextSize = 11f),
+            (suspend { fixture.repository.setQuoteAuthorTextSize(12f) }) to baseline.copy(quoteAuthorTextSize = 12f),
+            (suspend { fixture.repository.setWidgetUpdateTime(1L) }) to baseline.copy(quoteUpdateTime = 1L),
+            (suspend { fixture.repository.setQuoteTextGravity("End") }) to baseline.copy(quoteTextGravity = TextGravity.END),
+            (suspend { fixture.repository.setQuoteAuthorTextGravity("Center") }) to baseline.copy(quoteAuthorTextGravity = TextGravity.CENTER),
+            (suspend { fixture.repository.setQuoteTextColor(0) }) to baseline.copy(quoteTextColor = 0),
+            (suspend { fixture.repository.setQuoteAuthorTextColor(0x12345678) }) to baseline.copy(quoteAuthorTextColor = 0x12345678)
+        )
+
+        for ((change, expected) in changes) {
+            fixture.interactor.setNewWidgetParams(baseline)
+            change()
+            assertEquals(expected, fixture.interactor.getQuoteWidgetParams())
+        }
+    }
+
     @Test fun emptyStorageProvidesAllDefaults() = runBlocking {
         val fixture = SettingsFixture()
         assertEquals(

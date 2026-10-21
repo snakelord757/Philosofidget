@@ -12,6 +12,8 @@ class PreferencesTopicSelectionDataSourceTest {
         val reads = mutableListOf<String>()
         var applyCount = 0
         var writeFailure: RuntimeException? = null
+        var readFailure: RuntimeException? = null
+        var applyFailure: RuntimeException? = null
         private val pending = mutableMapOf<String, String>()
 
         private val editor = Proxy.newProxyInstance(
@@ -25,6 +27,7 @@ class PreferencesTopicSelectionDataSourceTest {
                     proxy
                 }
                 "apply" -> {
+                    applyFailure?.let { throw it }
                     values.putAll(pending)
                     pending.clear()
                     applyCount++
@@ -40,6 +43,7 @@ class PreferencesTopicSelectionDataSourceTest {
         ) { _, method, args ->
             when (method.name) {
                 "getString" -> {
+                    readFailure?.let { throw it }
                     val key = args!![0] as String
                     reads.add(key)
                     values[key] ?: args[1]
@@ -87,5 +91,33 @@ class PreferencesTopicSelectionDataSourceTest {
         })
         assertEquals("life", source.getSelectedTopicId())
         assertEquals(0, stub.applyCount)
+    }
+
+    @Test fun `preference read failure is not treated as absent selection`() {
+        val stub = PreferencesStub(mapOf("selected_quote_topic" to "life"))
+        val failure = ClassCastException("Stored selection has an incompatible type")
+        stub.readFailure = failure
+        val source = PreferencesTopicSelectionDataSource(stub.preferences)
+
+        assertSame(failure, assertThrows(ClassCastException::class.java) {
+            source.getSelectedTopicId()
+        })
+        assertEquals(0, stub.applyCount)
+        assertEquals("life", stub.values["selected_quote_topic"])
+    }
+
+    @Test fun `apply failure reaches caller and a subsequent write can succeed`() {
+        val stub = PreferencesStub(mapOf("selected_quote_topic" to "life"))
+        val failure = IllegalStateException("Cannot apply preferences")
+        stub.applyFailure = failure
+        val source = PreferencesTopicSelectionDataSource(stub.preferences)
+
+        assertSame(failure, assertThrows(IllegalStateException::class.java) {
+            source.setSelectedTopicId("peace")
+        })
+        stub.applyFailure = null
+        source.setSelectedTopicId("wisdom")
+        assertEquals("wisdom", source.getSelectedTopicId())
+        assertEquals(1, stub.applyCount)
     }
 }

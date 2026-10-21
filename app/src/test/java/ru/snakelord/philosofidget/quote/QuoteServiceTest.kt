@@ -1,6 +1,7 @@
 package ru.snakelord.philosofidget.quote
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -14,6 +15,7 @@ import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import ru.snakelord.philosofidget.data.datasource.quote.network.QuoteService
+import java.io.IOException
 
 class QuoteServiceTest {
     @Test fun `Retrofit builds correct GET URL and decodes JSON response`() = runBlocking {
@@ -39,15 +41,43 @@ class QuoteServiceTest {
         assertEquals(503, (error as HttpException).code())
     }
 
-    private fun service(code: Int, requests: MutableList<Request>): QuoteService {
+    @Test fun `successful HTTP response with malformed or incomplete JSON fails conversion`() = runBlocking {
+        for (body in listOf("not json", "{}", "", """{"quoteText":null,"quoteAuthor":"","senderName":"","senderLink":"","quoteLink":""}""")) {
+            val requests = mutableListOf<Request>()
+            val error = runCatching { service(200, requests, body).getQuote("getQuote", "json", 0, "ru") }.exceptionOrNull()
+            assertTrue("Expected a conversion error for body: $body, got $error", error is SerializationException)
+            assertEquals(1, requests.size)
+        }
+    }
+
+    @Test fun `transport error reaches suspend service caller with its original details`() = runBlocking {
+        val failure = IOException("offline")
+        val requests = mutableListOf<Request>()
+        val error = runCatching {
+            service(200, requests, failure = failure).getQuote("getQuote", "json", 0, "ru")
+        }.exceptionOrNull()
+        assertTrue(error is IOException)
+        assertEquals(failure.message, error?.message)
+        // Coroutine stacktrace recovery may wrap the original exception in a copy.
+        assertSame(failure, generateSequence(error) { it.cause }.last())
+        assertEquals(1, requests.size)
+    }
+
+    private fun service(
+        code: Int,
+        requests: MutableList<Request>,
+        body: String = """{"quoteText":"A thought","quoteAuthor":"Author","senderName":"","senderLink":"","quoteLink":""}""",
+        failure: IOException? = null,
+    ): QuoteService {
         val client = OkHttpClient.Builder().addInterceptor { chain ->
             requests += chain.request()
+            failure?.let { throw it }
             Response.Builder()
                 .request(chain.request())
                 .protocol(Protocol.HTTP_1_1)
                 .code(code)
                 .message(if (code == 200) "OK" else "Unavailable")
-                .body("""{"quoteText":"A thought","quoteAuthor":"Author","senderName":"","senderLink":"","quoteLink":""}""".toResponseBody("application/json".toMediaType()))
+                .body(body.toResponseBody("application/json".toMediaType()))
                 .build()
         }.build()
         return Retrofit.Builder()

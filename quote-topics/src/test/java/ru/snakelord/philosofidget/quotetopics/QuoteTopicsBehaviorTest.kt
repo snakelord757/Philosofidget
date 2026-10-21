@@ -136,4 +136,47 @@ class QuoteTopicsBehaviorTest {
         assertEquals(second, viewModel.selectedTopic.value)
         assertEquals(listOf("second"), storage.savedIds)
     }
+
+    @Test fun `catalog load failure propagates without changing persisted selection`() {
+        val storage = SelectionSource("first")
+        val failure = IllegalStateException("Catalog unavailable")
+        val source = object : QuoteTopicsDataSource {
+            override fun getTopics(): List<QuoteTopic> = throw failure
+        }
+
+        assertSame(failure, assertThrows(IllegalStateException::class.java) {
+            QuoteTopicsRepositoryImpl(source, storage)
+        })
+        assertEquals("first", storage.id)
+        assertTrue(storage.savedIds.isEmpty())
+    }
+
+    @Test fun `selection read failure propagates without overwriting stored data`() {
+        val failure = IllegalStateException("Selection unavailable")
+        var writes = 0
+        val storage = object : TopicSelectionDataSource {
+            override fun getSelectedTopicId(): String? = throw failure
+            override fun setSelectedTopicId(id: String) { writes++ }
+        }
+        val source = object : QuoteTopicsDataSource {
+            override fun getTopics() = listOf(first, second)
+        }
+
+        assertSame(failure, assertThrows(IllegalStateException::class.java) {
+            QuoteTopicsRepositoryImpl(source, storage)
+        })
+        assertEquals(0, writes)
+    }
+
+    @Test fun `recreation restores selected identifier using current catalog title and order`() {
+        val storage = SelectionSource()
+        assertTrue(repository(storage).selectTopic("second"))
+        val renamedTopic = second.copy(title = "Updated title")
+
+        val restored = repository(storage, listOf(renamedTopic, first))
+
+        assertEquals(listOf(renamedTopic, first), restored.topics)
+        assertEquals(renamedTopic, restored.selectedTopic.value)
+        assertEquals(listOf("second"), storage.savedIds)
+    }
 }
