@@ -1,0 +1,309 @@
+# Структура Philosofidget
+
+Описание исходников development на коммите 3df3294 (21 октября 2026 года).
+Это карта фактической реализации, а не требования к будущей архитектуре.
+Пути ниже отсчитываются от корня репозитория; Kotlin-пакеты app находятся в
+app/src/main/java/ru/snakelord/philosofidget/, пакеты quote-topics — в
+quote-topics/src/main/java/ru/snakelord/philosofidget/quotetopics/.
+
+## 1. Назначение и состав проекта
+
+Android-приложение показывает цитаты Forismatic в виджете рабочего стола.
+В приложении настраиваются язык цитат, оформление текста и автора, интервал
+обновления. Отдельный экран позволяет выбрать одну из 18 моковых тем цитат.
+Выбор темы сохраняется, но пока не участвует в запросе цитат.
+
+```text
+Philosofidget/
+├── AGENTS.md                    Правила изменения проекта
+├── STACK.md                     Описание стека и объявленных версий
+├── PROJECT_STRUCTURE            Карта модулей, слоёв и потоков данных
+├── settings.gradle              Репозитории и включение :app, :quote-topics
+├── build.gradle                 Объявление плагинов сборки
+├── gradle.properties            Общие параметры Gradle/Android/Kotlin
+├── gradle/wrapper/               Gradle Wrapper и контрольная сумма дистрибутива
+├── gradlew, gradlew.bat          Запуск сборки на Unix и Windows
+├── local.properties             Локальная конфигурация Android SDK
+├── app/                         Android application, настройки и виджет
+│   ├── build.gradle             Конфигурация приложения и зависимости
+│   ├── proguard-rules.pro       Правила ProGuard (минификация release отключена)
+│   └── src/
+│       ├── main/AndroidManifest.xml
+│       ├── main/java/ru/snakelord/philosofidget/
+│       │   ├── data/            Источники данных и реализации репозиториев
+│       │   ├── domain/          Модели, контракты и операции
+│       │   └── presentation/    UI, состояния, DI и Android-виджет
+│       ├── main/res/            XML-интерфейс и Android-ресурсы
+│       ├── test/                Локальный шаблонный unit-тест
+│       └── androidTest/         Шаблонный инструментальный тест
+└── quote-topics/                 Android library: выбор темы цитат
+    ├── build.gradle             Конфигурация библиотеки и зависимости
+    └── src/
+        ├── main/AndroidManifest.xml
+        ├── main/java/ru/snakelord/philosofidget/quotetopics/
+        │   ├── data/            Моковый каталог и сохранение выбора
+        │   ├── domain/          Модель темы, контракт, interactor
+        │   ├── presentation/    Экран, ViewModel и подтверждение
+        │   └── di/              Koin-модуль фичи
+        ├── main/res/values/strings.xml
+        └── test/                Unit-тесты выбора темы
+```
+
+Каталоги build/, .gradle/ и локальные файлы IDE не являются слоями приложения.
+Граф Gradle-зависимостей: :app → :quote-topics. Обратной зависимости нет.
+Основные функции приложения пока разделены пакетами одного :app; отдельный
+модуль выделен только для тем. STACK.md описывает прежнее состояние с одним
+модулем; состав модулей следует проверять по settings.gradle и этой карте.
+
+## 2. Запуск приложения и внедрение зависимостей
+
+presentation/PhilosofidgetApplication.kt запускает Koin и подключает
+commonModule, widgetModule, widgetSettingsModule и quoteTopicsModule.
+
+| Конфигурация | Что предоставляет |
+| --- | --- |
+| presentation/di/CommonModule.kt | StringResolver на Android Resources, Dispatchers.IO, WidgetManager |
+| presentation/di/WidgetModule.kt | OkHttp/Retrofit/QuoteService, preferences цитаты, QuoteDataSource и QuoteRepository, мапперы, WidgetViewDelegate, именованные use case |
+| presentation/di/WidgetSettingsDependency.kt | Preferences настроек, data source, repository, factory, interactor и WidgetSettingsViewModel с параметром targetWidgetId |
+| quote-topics: di/QuoteTopicsModule.kt | Singleton-источники каталога и выбора, общий singleton-репозиторий, interactor и ViewModel темы |
+
+Идентификаторы именованных use case собраны в presentation/common/UseCases.kt.
+Большинство классов получают зависимости через конструктор. Компоненты,
+создаваемые Android (provider и worker), используют KoinComponent/inject.
+Разные QuoteTopicsViewModel на экранах наблюдают один репозиторий и StateFlow.
+
+AndroidManifest.xml задаёт Application, MainActivity, receiver QuotesWidgetProvider,
+INTERNET и сетевую конфигурацию. MainActivity — launcher и точка настройки
+виджета. Она создаёт WidgetSettingsFragment и передаёт EXTRA_APPWIDGET_ID,
+если запуск инициирован конфигурацией виджета. При восстановлении Activity
+фрагмент повторно не добавляется.
+
+## 3. Получение и хранение цитат в :app
+
+### Data
+
+- data/datasource/quote/network/QuoteService.kt — Retrofit GET 1.0/ с query
+  method, format, key, lang. Базовый URL в WidgetModule:
+  http://api.forismatic.com/api/. Используются method=getQuote и format=json.
+- data/model/QuoteDTO.kt — сериализуемый сетевой ответ: quoteText, quoteAuthor,
+  senderName, senderLink, quoteLink.
+- QuoteDataSource/QuoteDataSourceImpl в data/datasource/quote/ объединяют
+  сетевую загрузку и локальное хранение последней цитаты. Quote сохраняется
+  JSON-строкой через Kotlin Serialization в SharedPreferences.
+- data/repository/QuoteRepositoryImpl.kt реализует domain-контракт,
+  делегирует источнику данных, преобразует Lang в строковый код API.
+
+### Domain
+
+- domain/model/Quote.kt — текст и автор цитаты; остальные поля DTO в неё
+  не переносятся. Lang — варианты RU/ENG с API-кодами ru/en,
+  GetQuoteParams — ключ и язык запроса.
+- domain/repository/QuoteRepository.kt — контракт получения, сохранения,
+  чтения и удаления цитаты. Его getQuote возвращает QuoteDTO: текущая граница
+  domain зависит от data-модели.
+- domain/mapper/QuoteDTOMapper.kt преобразует QuoteDTO в Quote.
+- domain/usecase/quote/GetQuoteUseCase.kt объединяет запрос репозитория
+  и преобразование DTO. GetKeyUseCase генерирует случайный ключ 0..999998.
+- StoreQuoteUseCase, GetStoredQuoteUseCase, RemoveStoredQuoteUseCase отвечают
+  за локальную цитату; GetUpdateTimeUseCase читает интервал из настроек.
+- domain/usecase/CoroutineUseCase.kt и CoroutineUseCaseWithParams.kt —
+  общие suspend-контракты операций без параметра и с параметром.
+- domain/interceptor/EscapingCharacterInterceptor.kt — подключённый к OkHttp
+  обработчик тела ответа, удаляющий последовательность обратного слеша
+  с одинарной кавычкой перед JSON-десериализацией.
+
+OkHttp включает BASIC-логирование и connect timeout 10 секунд.
+res/xml/network_security_config.xml разрешает HTTP для api.forismatic.com.
+
+## 4. Настройки виджета в :app
+
+### Data
+
+data/datasource/settings/WidgetSettingsDataSource.kt определяет операции
+чтения/записи каждого параметра; WidgetSettingsDataSourceImpl хранит примитивы
+и строки в SharedPreferences. Значения по умолчанию: автор виден, русский язык,
+размер цитаты 30, автора 15, белый текст, обновление каждые 12 часов,
+выравнивание цитаты по началу и автора по концу.
+
+WidgetSettingsFactoryImpl в том же пакете собирает массив элементов экрана
+из сохранённых значений и строк Android Resources. Формирует переключатель,
+списки языка/выравнивания, слайдеры размеров/интервала и выбор цветов.
+Диапазоны слайдеров: цитата 11..30, автор 11..15, интервал 1..24 часа.
+
+data/repository/WidgetSettingsRepositoryImpl.kt делегирует хранение источнику,
+а построение списка — WidgetSettingsFactory из domain/factory/.
+
+### Domain
+
+- domain/repository/WidgetSettingsRepository.kt — контракт настроек.
+- domain/model/WidgetSettings.kt — типы элементов Toggle, Spinner, Slider,
+  ColorPicker с целями изменения, заголовками и текущими значениями.
+- QuoteWidgetParams — совокупность параметров оформления, языка и интервала;
+  TextGravity — логические варианты выравнивания.
+- domain/interactor/WidgetSettingsInteractor.kt и Impl — получение списка,
+  сборка QuoteWidgetParams, сохранение всего набора, очистка, перевод
+  отображаемых строк языка и выравнивания в enum и обратно.
+- domain/usecase/widget_settings/RemoveQuoteParamsUseCase.kt очищает параметры
+  через interactor.
+- domain/string_resolver/ содержит StringResolver и реализацию на Resources.
+  Язык и выравнивание сохраняются отображаемыми строками; interactor
+  сопоставляет их с локализованными названиями и использует fallback.
+
+### Presentation
+
+- presentation/view/widget_settings/WidgetSettingsViewModel.kt загружает
+  настройки через interactor на IO dispatcher и публикует StateFlow списка,
+  параметров предпросмотра, состояния кнопки и результата конфигурации.
+  Изменения контролов сначала меняют состояние в памяти и накапливают
+  WidgetPayload. Сохранение записывает настройки и просит обновить виджеты;
+  добавление сохраняет их и вызывает системное закрепление виджета.
+- WidgetSettingsFragment.kt подписывается на состояния с учётом lifecycle,
+  обновляет предпросмотр, показывает ColorPickerDialog и возвращает Activity
+  RESULT_OK после сохранения конфигурации. Открывает QuoteTopicsFragment
+  через add/hide и back stack; отображает выбранную тему из отдельной ViewModel.
+- recycler_view/adapter/WidgetSettingsAdapter.kt выбирает тип строки.
+  viewholder/ToggleViewHolder, SpinnerViewHolder, SliderViewHolder,
+  ColorPickerViewHolder отображают соответствующие настройки и передают
+  действия в callbacks ViewModel; WidgetSettingsBaseViewHolder — общая база.
+  itemdecoration/WidgetSettingsItemDecoration.kt задаёт отступы списка.
+- presentation/model/ActionButtonState.kt содержит подпись, доступность и
+  действие кнопки; WidgetConfigurationState.kt — ID и факт сохранения.
+- domain/ext/Flow.kt содержит subscribeOnLifecycle — lifecycle-подписку на Flow.
+- presentation/common/toaster/Toaster.kt — показ краткого сообщения.
+
+Предпросмотр в widget_quote_preview.xml содержит ресурсный пример цитаты;
+Fragment меняет его оформление, а не запрашивает новую цитату для preview.
+
+## 5. Виджет и фоновая работа в :app
+
+| Участок | Ответственность |
+| --- | --- |
+| presentation/widget/BaseAppWidgetProvider.kt | Получение Parcelable payload из Intent, IO/Main coroutine scopes, вызов lifecycle AppWidgetProvider |
+| presentation/widget/QuotesWidgetProvider.kt | Чтение цитаты и настроек, отображение виджетов, постановка/изменение периодической работы, очистка при удалении последнего виджета |
+| presentation/widget/widget_manager/WidgetManager.kt и Impl | Поиск активных ID, broadcast ACTION_APPWIDGET_UPDATE, запрос закрепления через AppWidgetManager на Android 8+ |
+| presentation/widget/widget_manager/WidgetPayload.kt | Перечень частей, которые нужно обновить: цитата, язык, размеры, цвета, видимость, выравнивание, интервал |
+| presentation/mapper/QuoteWidgetStateMapper.kt | Объединение Quote и QuoteWidgetParams в WidgetState |
+| presentation/model/WidgetState.kt | Данные для отображения цитаты с оформлением |
+| presentation/widget/view_delegate/WidgetViewDelegate.kt и Impl | Применение текста, видимости, цветов и размеров к RemoteViews widget_quote; выравнивание выбирается показом соответствующего TextView из набора start/end/center |
+| presentation/widget/worker/QuoteLoadingWorker.kt | Загрузка новой цитаты, сохранение, запрос обновления виджетов |
+
+Поток обновления:
+
+1. При включении provider проверяет сохранённую цитату; если её нет, ставит
+   уникальную периодическую работу LOAD_QUOTE_WORKER_NAME в WorkManager.
+2. Worker читает язык из WidgetSettingsInteractor, получает случайный ключ,
+   вызывает GetQuoteUseCase → QuoteRepository → QuoteDataSource → QuoteService.
+3. Полученный DTO преобразуется в Quote и записывается StoreQuoteUseCase
+   в preferences. WidgetManager.updateQuote отправляет broadcast с QUOTE.
+4. Provider читает локальную цитату и текущие настройки, строит WidgetState;
+   delegate меняет RemoteViews, AppWidgetManager применяет их к ID виджетов.
+5. При сохранении оформления передаются payload отдельных свойств.
+   Смена языка пересоздаёт работу с CANCEL_AND_REENQUEUE, смена интервала
+   обновляет её с UPDATE. Без сохранённой цитаты onUpdate завершает обработку.
+6. onDisabled запрашивает удаление цитаты и настроек и отменяет работу.
+
+PeriodicWorkRequest использует часы и ограничения CONNECTED и battery-not-low.
+При исключении worker пишет ошибку в Log и возвращает Result.failure(),
+явного retry нет. Цитата и настройки общие для всех ID: отдельного хранилища
+по каждому экземпляру виджета нет. BaseAppWidgetProvider отменяет scopes
+в onDisabled; очистка в наследнике запускается асинхронно в этом же IO scope.
+
+## 6. Фича выбора темы в :quote-topics
+
+### Data
+
+- data/QuoteTopicsDataSource.kt: интерфейс каталога и MockQuoteTopicsDataSource
+  с 18 фиксированными QuoteTopic(id, title). Идентификаторы и русские названия
+  находятся в Kotlin-коде, сетевого запроса каталога нет.
+- data/TopicSelectionDataSource.kt: контракт выбора и
+  PreferencesTopicSelectionDataSource. Сохраняется только ID выбранной темы.
+- data/QuoteTopicsRepositoryImpl.kt: загружает каталог, восстанавливает выбор
+  по сохранённому ID, публикует nullable StateFlow. Неизвестный ID при чтении
+  даёт null; попытка выбрать отсутствующий ID возвращает false без записи.
+  При валидном выборе сначала сохраняется ID, затем обновляется StateFlow.
+
+### Domain
+
+- domain/QuoteTopic.kt — модель id/title.
+- domain/QuoteTopicsRepository.kt — список тем, StateFlow выбранной темы
+  и операция selectTopic(id): Boolean.
+- domain/QuoteTopicsInteractor.kt — доступ к каталогу/выбору и делегирование
+  выбора репозиторию. Не зависит от классов приложения :app.
+
+### Presentation и интеграция
+
+- presentation/QuoteTopicsViewModel.kt получает interactor через конструктор,
+  предоставляет каталог, выбранную тему и действие выбора.
+- presentation/QuoteTopicsFragment.kt программно строит LinearLayout,
+  кнопку возврата, заголовок и ListView с ArrayAdapter. Нажатие темы открывает
+  TopicConfirmationDialog, но само по себе не сохраняет выбор.
+- presentation/TopicConfirmationDialog.kt — DialogFragment с Material-диалогом;
+  подтверждение передаёт ID через Fragment Result API. Fragment вызывает
+  selectTopic и при успехе возвращается через popBackStack. Отмена ничего
+  не сохраняет. Nullable view-ссылки очищаются в onDestroyView.
+- di/QuoteTopicsModule.kt связывает слои Koin; preferences выбора отделены
+  от настроек оформления. Основной Fragment наблюдает общий selectedTopic
+  и обновляет подпись текущей темы после подтверждения.
+
+Выбор сохраняется сразу при подтверждении, независимо от кнопки сохранения
+оформления виджета. GetQuoteParams и QuoteService получают только key/lang;
+тема не передаётся в API, не фильтрует цитаты и не входит в QuoteWidgetParams.
+
+## 7. Где хранятся данные
+
+| Данные | Источник / хранилище | Кто читает и пишет |
+| --- | --- | --- |
+| Новая цитата | Forismatic HTTP JSON | QuoteService через QuoteDataSourceImpl |
+| Последняя цитата | QUOTE_WIDGET_PREFS, ключ PREFERENCES_QUOTE_KEY, JSON Quote | QuoteDataSourceImpl; worker пишет, provider читает |
+| Оформление, язык, интервал | QUOTE_WIDGET_SETTINGS_PREFS, отдельные примитивные/строковые ключи | WidgetSettingsDataSourceImpl через repository/interactor |
+| Каталог тем | MockQuoteTopicsDataSource, список Kotlin | QuoteTopicsRepositoryImpl |
+| Выбранная тема | QUOTE_TOPICS_PREFS, ключ selected_quote_topic | PreferencesTopicSelectionDataSource |
+| Несохранённое оформление и payload | Память WidgetSettingsViewModel | События контролов и сохранение |
+| Текущий выбор темы для UI | StateFlow общего QuoteTopicsRepositoryImpl | ViewModel обоих экранов |
+
+Базы данных в этих потоках нет. Очистка настроек виджета очищает их preferences,
+но не отдельные QUOTE_TOPICS_PREFS.
+
+## 8. Ресурсы и платформенная конфигурация
+
+- app/src/main/res/layout/activity_main.xml — контейнер фрагментов;
+  fragment_widget_settings.xml — настройки, тема, preview и кнопка действия.
+- widget_settings_toggle/spinner/slider/color_picker.xml — строки списка.
+- widget_quote.xml — RemoteViews виджета; widget_quote_preview.xml — пример
+  оформления на экране настроек.
+- res/xml/quotes_app_widget_provider.xml и xml-v31/quotes_app_widget_provider.xml
+  — описание виджета и вариант метаданных для Android 12+.
+- res/values/ содержит strings, colors, dimens, themes; values-night — тему
+  для тёмного режима; drawable и mipmap — графику/иконки.
+- quote-topics/src/main/res/values/strings.xml — служебные подписи экрана
+  и диалога выбора. Данные мокового каталога лежат в data-коде.
+
+В существующем :app включён и применяется ViewBinding; это факт реализации.
+Правила AGENTS.md запрещают применять его в новых изменениях. Слой domain
+в :app также не полностью платформенно независим: там находятся Resources-
+реализация StringResolver, lifecycle-extension Flow и OkHttp interceptor.
+
+## 9. Тесты, сборка и навигация для изменений
+
+- app/src/test/java/ru/snakelord/randomquoteswidget/ExampleUnitTest.kt —
+  шаблонная проверка сложения, бизнес-логику виджета не покрывает.
+- app/src/androidTest/java/ru/snakelord/randomquoteswidget/ExampleInstrumentedTest.kt
+  — проверка package name со старым ru.snakelord.randomquoteswidget,
+  отличающимся от applicationId ru.snakelord.philosofidget.
+- quote-topics/src/test/java/ru/snakelord/philosofidget/quotetopics/QuoteTopicsTest.kt
+  — шесть тестов: полнота/уникальность каталога, выбор через ViewModel,
+  восстановление выбора, отклонение неизвестного ID, неизвестный сохранённый
+  ID, восстановление после пересоздания репозитория. Хранилище заменяется
+  in-memory реализацией интерфейса; Android preferences и UI не проверяются.
+
+Команды Windows из корня: .\gradlew.bat testDebugUnitTest для локальных
+unit-тестов обоих модулей, .\gradlew.bat assembleDebug для debug-сборки.
+Инструментальным тестам нужен Android device/emulator.
+
+Для изменения API/кэша цитат начинать с data/datasource/quote и usecase/quote;
+для параметров — с QuoteWidgetParams, settings data source/factory и interactor;
+для внешнего вида экрана — с widget_settings и res/layout; для RemoteViews —
+с widget/view_delegate; для расписания — с provider и worker; для тем —
+с :quote-topics и его интеграции в WidgetSettingsFragment.
+При изменении состава модулей, обязанностей слоёв, DI или источников данных
+необходимо актуализировать этот файл вместе с кодом.
