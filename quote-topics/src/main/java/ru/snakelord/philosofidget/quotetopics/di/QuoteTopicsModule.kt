@@ -16,6 +16,7 @@ val quoteTopicsModule = module {
             androidContext().getSharedPreferences("QUOTE_TOPICS_PREFS", Context.MODE_PRIVATE)
         )
     }
+    single<QuoteTopicsRepository> { QuoteTopicsRepositoryImpl(get(), get()) }
     factory { QuoteTopicsInteractor(get()) }
     viewModel { QuoteTopicsViewModel(get()) }
 }
