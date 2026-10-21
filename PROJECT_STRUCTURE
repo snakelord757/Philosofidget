@@ -1,6 +1,7 @@
 # Структура Philosofidget
 
-Описание исходников development на коммите 3df3294 (21 октября 2026 года).
+Описание исходников development на коммите 3df3294 (21 октября 2026 года),
+дополненное картой unit-тестов ветки feature/unit-test-coverage.
 Это карта фактической реализации, а не требования к будущей архитектуре.
 Пути ниже отсчитываются от корня репозитория; Kotlin-пакеты app находятся в
 app/src/main/java/ru/snakelord/philosofidget/, пакеты quote-topics — в
@@ -39,7 +40,7 @@ Philosofidget/
 │       │   ├── domain/          Модели, контракты и операции
 │       │   └── presentation/    UI, состояния, DI и Android-виджет
 │       ├── main/res/            XML-интерфейс и Android-ресурсы
-│       ├── test/                Локальный шаблонный unit-тест
+│       ├── test/                Unit-тесты цитат, настроек, mapper и шаблонный тест
 │       └── androidTest/         Шаблонный инструментальный тест
 └── quote-topics/                 Android library: выбор темы цитат
     ├── build.gradle             Конфигурация библиотеки и зависимости
@@ -300,6 +301,46 @@ PeriodicWorkRequest использует часы и ограничения CONN
   восстановление выбора, отклонение неизвестного ID, неизвестный сохранённый
   ID, восстановление после пересоздания репозитория. Хранилище заменяется
   in-memory реализацией интерфейса; Android preferences и UI не проверяются.
+
+Дополнительные локальные тесты (пакет app: ru/snakelord/philosofidget):
+
+- quote/QuoteDataSourceTest.kt, QuoteRepositoryTest.kt, QuoteUseCasesTest.kt —
+  запрос, хранение, восстановление и удаление цитаты, ошибки и cancellation.
+- quote/QuoteDTOMapperTest.kt и QuoteServiceTest.kt — преобразование DTO,
+  сериализация и фактические Retrofit path/query без обращения к сети.
+- quote/EscapingCharacterInterceptorTest.kt — сохранение JSON, апострофов,
+  HTTP-метаданных и передача ошибок. Регрессии апострофов и headers выявляют
+  существующие дефекты; тесты не отключены, продуктовый код не изменён.
+- settings/SettingsPersistenceTest.kt — defaults, все параметры,
+  repository/interactor, преобразования enum, очистка и use case,
+  восстановление после пересоздания слоёв и fallback при null в preferences.
+- settings/SettingsFactoryTest.kt — состав девяти контролов, значения,
+  диапазоны и обновление снимка настроек.
+- settings/SettingsViewModelTest.kt — загрузка состояния и изменения всех
+  контролов без записи; SettingsTestSupport.kt содержит fake SharedPreferences
+  и fixture. Fake также используется тестами хранения цитат.
+- WidgetStateMapperTest.kt — перенос цитаты и оформления в состояние виджета.
+
+В quote-topics добавлены QuoteTopicsBehaviorTest.kt (пустой каталог,
+смена/повторный выбор, ошибки сохранения, синхронизация ViewModel и события
+подписки StateFlow),
+PreferencesTopicSelectionDataSourceTest.kt (контракт preferences через fake)
+и QuoteTopicsModuleTest.kt (Koin-граф с подменой Android storage).
+
+Добавлено 60 тестов: 26 для цитат, 17 для настроек, 4 для состояния виджета
+и 13 для тем. Вместе с исходными шестью тестами тем и шаблонным тестом app
+в исходниках 67 unit-тестов. Это число тестов, а не процент покрытия.
+
+Ограничения локального покрытия: Android lifecycle, Fragment/Dialog,
+RecyclerView и preview, RemoteViews, AppWidgetManager/provider, WorkManager
+и worker требуют Android runtime; Robolectric и work-testing не подключены.
+Main-dispatched пути кнопок сохранения/закрепления и результата конфигурации
+WidgetSettingsViewModel не проверяются: coroutines-test не подключён.
+StringResolverImpl/Resources и реальная дисковая запись SharedPreferences
+также требуют Android. GetKeyUseCase использует неинъецируемый Random.Default,
+поэтому детерминированная проверка генерации без изменения кода недоступна.
+App DI bootstrap зависит от Android Application; в quote-topics проверяется
+изолированный граф с fake storage. Наличие тестов не означает полное покрытие.
 
 Команды Windows из корня: .\gradlew.bat testDebugUnitTest для локальных
 unit-тестов обоих модулей, .\gradlew.bat assembleDebug для debug-сборки.
